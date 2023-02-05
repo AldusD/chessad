@@ -5,7 +5,7 @@ export function useMovePieces () {
     const pieceType = movingPiece.name.slice(1);
     const numCoordI = [Number(coordI[0]), Number(coordI[1])];
     const numCoordF = [Number(coordF[0]), Number(coordF[1])];
-    console.log(numCoordI, numCoordF)
+    
     if (pieces[coordF] && pieces[coordF].color === color) { // cannot capture same color piece
       return false;
     }
@@ -26,12 +26,35 @@ export function useMovePieces () {
 
 
         return false;
-      }; 
+      };
+
       if(captureRule() && (moveOneFowardRule || moveTwoFowardRule)) {
         return true
       }
+
+      return false;
     }
 
+    if (pieceType === 'Bishop') {
+      const yMove = numCoordF[0] - numCoordI[0];
+      const xMove = numCoordF[1] - numCoordI[1];
+      
+      const diagonalRule = (xMove === yMove) || (xMove === -yMove);
+      const obstacleRule = () => {
+        const xStep = (xMove > 0) ? 1 : -1;
+        const yStep = (yMove > 0) ? 1 : -1;
+        
+        let blockCoord = [numCoordI[0] + yStep, numCoordI[1] + xStep];
+        while (blockCoord[0] !== numCoordF[0]) {
+          if(pieces[blockCoord[0].toString() + blockCoord[1].toString()]) return false;
+          blockCoord[0] = blockCoord[0] + yStep;
+          blockCoord[1] = blockCoord[1] + xStep;
+        }
+        return true;
+      }
+
+      if(diagonalRule && obstacleRule()) return true;
+    }
     return false;    
   }
 
