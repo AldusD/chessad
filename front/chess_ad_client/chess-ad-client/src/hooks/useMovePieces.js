@@ -7,7 +7,7 @@ export function useMovePieces () {
     const numCoordF = [Number(coordF[0]), Number(coordF[1])];
 
     if (pieces[coordF] && pieces[coordF].color === color) { // cannot capture same color piece
-      return false;
+      return { error: true };
     }
 
     if (pieceType === 'Pawn') {
@@ -21,15 +21,27 @@ export function useMovePieces () {
         }
 
         if (Math.abs(numCoordI[1] - numCoordF[1]) === 1)
-          if (pieces[coordF] && (color === 'white' && numCoordI[0] === numCoordF[0] + 1) || (color === 'black' && numCoordI[0] === numCoordF[0] - 1))
-            return true;
-
+          if ((color === 'white' && numCoordI[0] === numCoordF[0] + 1) || (color === 'black' && numCoordI[0] === numCoordF[0] - 1))  return true;
 
         return false;
       };
+      const enPassantRule = () => {
+        const jumpPawn = (color === 'white') ? (numCoordF[0] + 1) + coordF[1] : (numCoordF[0] - 1) + coordF[1];
+        if (Math.abs(numCoordI[1] - numCoordF[1]) === 1) {
+          if (pieces[jumpPawn] && pieces[jumpPawn].jumpTime === pieces.move - 1) return { valid: true, enPassant: jumpPawn }; 
+          if (pieces[coordF]) return { valid: true };
+          return false;
+        }
+        return { valid: true };
+      }
 
-      if(captureRule() && (moveOneFowardRule || moveTwoFowardRule)) return true;
-      return false;
+      const passant = enPassantRule();
+      if (captureRule() && passant.valid) {
+        if (passant.enPassant) return { specialMove: { name: 'enPassant', coordI, numCoordI, coordF, numCoordF, pieces, info: { capturedPawnCoord: passant.enPassant } } }; 
+        if (moveOneFowardRule) return true;
+        if (moveTwoFowardRule) return { specialMove: { name: 'pawnJump', coordI, numCoordI, coordF, numCoordF, pieces } }
+      };
+      return { error: true };
     }
 
     if (pieceType === 'Bishop') {
@@ -51,12 +63,11 @@ export function useMovePieces () {
       }
 
       if(diagonalRule && obstacleRule()) return true;
-      return false;
+      return { error: true };
     }
 
     if (pieceType === 'Rook') {
       const crossRule = (numCoordF[0] - numCoordI[0] === 0 || numCoordF[1] - numCoordI[1] === 0);
-      
       const obstacleRule = () => {
         let step;
         let direction;
@@ -79,13 +90,28 @@ export function useMovePieces () {
       }
 
       if (crossRule && obstacleRule()) return true;
-      return false;
+      return { error: true };
     }
 
-    return false;    
+    return { error: true };    
   }
 
-  const updatePosition = (coordI, coordF, pieces) => {
+  const handleSpecialMove = specialMove => {
+    const { pieces, coordI, numCoordI, coordF, numCoordF } = specialMove;
+    if (specialMove.name === 'pawnJump') {
+      pieces[coordI].jumpTime = pieces.move;
+    }
+
+    if (specialMove.name === 'enPassant') {
+      const { capturedPawnCoord } =  specialMove.info;
+      pieces[capturedPawnCoord] = null;
+    }
+  } 
+
+  const updatePosition = (coordI, coordF, pieces, specialMove = null) => {
+    if (specialMove) handleSpecialMove(specialMove);
+    
+    pieces.move = pieces.move + 1;
     const currentState = {...pieces};
     const movingPiece = {...currentState[coordI]};
     currentState[coordI] = null;

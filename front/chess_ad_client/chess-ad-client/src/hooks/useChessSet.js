@@ -11,7 +11,9 @@ export function useChessSet () {
   
   const startPieces = () => {
     const toSetPieces = {};
-    
+    // move counter
+    toSetPieces.move = 1;
+
     // pawns
     for(let i = 1; i <= 8; i++) {
       toSetPieces['7' + i] = {
