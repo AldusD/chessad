@@ -18,11 +18,13 @@ export function useChessSet () {
     for(let i = 1; i <= 8; i++) {
       toSetPieces['7' + i] = {
         name: 'wPawn',
-        color: 'white'
+        color: 'white',
+        xp: 0
       }
       toSetPieces['2' + i] = {
         name: 'bPawn',
-        color: 'black'
+        color: 'black',
+        xp: 0
       }
     }
 
@@ -32,12 +34,13 @@ export function useChessSet () {
       if (i === 1 || i === 8) name = 'wRook';
       else if (i === 2 || i === 7) name = 'wKnight';
       else if (i === 3 || i === 6) name = 'wBishop';
-      else if (i === 4) name = 'wKing';
-      else if (i === 5) name = 'wQueen';
+      else if (i === 5) name = 'wKing';
+      else if (i === 4) name = 'wQueen';
       
       toSetPieces['8' + i] = {
         name,
-        color: 'white'
+        color: 'white',
+        xp: 0
       }
 
       if (i === 1 || i === 8) name = 'bRook';
@@ -48,7 +51,8 @@ export function useChessSet () {
       
       toSetPieces['1' + i] = {
         name,
-        color: 'black'
+        color: 'black',
+        xp: 0
       }
     }
     

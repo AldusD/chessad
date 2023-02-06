@@ -1,14 +1,30 @@
 export function useMovePieces () {
-  const validateMove = (coordI, coordF, pieces) => {
+  const validateMove = (coordI, coordF, pieces, usingSpell) => {
     const movingPiece = pieces[coordI];
     const color = movingPiece.color;
-    const pieceType = movingPiece.name.slice(1);
+    const pieceType = (movingPiece.name[0] === 'p') ?  movingPiece.name.slice(2) : movingPiece.name.slice(1);
     const numCoordI = [Number(coordI[0]), Number(coordI[1])];
     const numCoordF = [Number(coordF[0]), Number(coordF[1])];
     
     // cannot capture same color piece + castle exception
     if (pieces[coordF] && pieces[coordF].color === color) {
       if(!(pieceType === 'King' && pieces[coordF].name.slice(1) === 'Rook')) return { error: true };
+    }
+
+    // cannot capture flying powerKnight
+    const isPowerKnight = pieces[coordF]?.name.slice(2) === 'Knight';
+    const isActive = pieces[coordF]?.active > pieces.move;
+    if (isPowerKnight && isActive) return { error: true };
+
+    // activating spell
+    if (usingSpell) {
+      const isPowerful = movingPiece.name[0] === 'p';
+      const enoughXp = movingPiece.xp >= 5; 
+      console.log(isPowerful, enoughXp, )
+      if (!isPowerful || !enoughXp) return { error: true };
+      pieces[coordI].active = pieces.move + 3;
+
+      console.log(pieces[coordI])
     }
 
     if (pieceType === 'Pawn') {
@@ -204,15 +220,40 @@ export function useMovePieces () {
     return currentState
   }
 
+  const evolve = (pieces, coord) => {
+    if (pieces[coord].name[0] === 'p') return;
+    const pieceType = pieces[coord].name.slice(1);
+    const { name } = pieces[coord];
+
+    if (pieceType === 'Knight') {
+      pieces[coord].name = 'p' + name;
+      pieces[coord].active = 0;
+    }
+  }
+
+  const increaseXp = (pieces, coordI, coordF) => {
+    const movingPiece = pieces[coordI];
+    if (movingPiece.xp > 5) return;
+
+    movingPiece.xp = movingPiece.xp + 1;
+    if (pieces[coordF]) movingPiece.xp = movingPiece.xp + pieces[coordF].xp;
+    if (movingPiece.xp >= 5 && movingPiece.name[0] !== 'p') evolve(pieces, coordI);
+  }
+
+  const changePositionStats = (pieces, coordI, coordF) => {
+    pieces.move = pieces.move + 1;
+    pieces[coordI].hasMoved = true;
+    increaseXp(pieces, coordI, coordF);
+  }
+
   const updatePosition = (coordI, coordF, pieces, specialMove = null) => {
     if (specialMove) {
       const action = handleSpecialMove(specialMove);
       if (action?.position) return action.position;
     }
     
-    pieces.move = pieces.move + 1;
-    pieces[coordI].hasMoved = true;
-
+    console.log(pieces[coordI])
+    changePositionStats(pieces, coordI, coordF);
     const currentState = movePiece({...pieces}, coordI, coordF);
     return currentState;
   }

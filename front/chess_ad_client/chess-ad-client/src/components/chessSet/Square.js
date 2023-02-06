@@ -2,14 +2,15 @@ import styled from "styled-components";
 import { useMovePieces } from "../../hooks/useMovePieces";
 import Piece from "./Piece";
 
-export default function Square ({ coordinates, color, pieces, setPieces, selectedSquare, setSelectedSquare }) {
+export default function Square ({ coordinates, color, pieces, setPieces, selectedSquare, setSelectedSquare, usingSpell, setUsingSpell }) {
   const [validateMove, updatePosition] = useMovePieces(); 
   
-  const movePiece = () => {
-    const moveInfo = validateMove(selectedSquare, coordinates, pieces);
+  const movePiece = (usingSpell) => {
+    const moveInfo = validateMove(selectedSquare, coordinates, pieces, usingSpell);
     if(moveInfo.error) return setSelectedSquare(coordinates);
     const newPosition = updatePosition(selectedSquare, coordinates, pieces, moveInfo.specialMove);
     setPieces(newPosition);
+    setUsingSpell(false);
     return setSelectedSquare(null);
     }
     
@@ -18,7 +19,7 @@ export default function Square ({ coordinates, color, pieces, setPieces, selecte
     if(coordinates === selectedSquare) return setSelectedSquare(null);
       
     if (previousPiece) {
-      return movePiece();
+      return movePiece(usingSpell);
     }      
     setSelectedSquare(coordinates);
     }
@@ -31,7 +32,9 @@ export default function Square ({ coordinates, color, pieces, setPieces, selecte
 
           {(selectedSquare === coordinates) ? <SelectedFilter /> : <></>}
           {pieces[coordinates] ? 
-            <Piece name={pieces[coordinates].name} color={pieces[coordinates].color} />
+            <Piece
+              pieceInfo={{...pieces[coordinates]}} 
+              move={pieces.move} />
             :
             <></>    
           }
