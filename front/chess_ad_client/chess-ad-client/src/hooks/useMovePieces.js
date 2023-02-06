@@ -33,7 +33,14 @@ export function useMovePieces () {
           return false;
         }
         return { valid: true };
+      };
+      const promotionRule = () => {
+        if (coordF[0] === 1 && color === 'white' || coordF[0] === 8 && color === 'black') {
+          return false // to be implemented :)
+        }
+        return false;
       }
+
 
       const passant = enPassantRule();
       if (captureRule() && passant.valid) {
@@ -42,6 +49,14 @@ export function useMovePieces () {
         if (moveTwoFowardRule) return { specialMove: { name: 'pawnJump', coordI, numCoordI, coordF, numCoordF, pieces } }
       };
       return { error: true };
+    }
+
+    if (pieceType === 'Knight') {
+      const yMove = numCoordF[0] - numCoordI[0];
+      const xMove = numCoordF[1] - numCoordI[1];
+      const lShapeRule = (Math.abs(xMove) === 2 && Math.abs(yMove) === 1) || (Math.abs(yMove) === 2 && Math.abs(xMove) === 1);
+
+      if (lShapeRule) return true;
     }
 
     if (pieceType === 'Bishop') {
