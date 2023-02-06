@@ -5,7 +5,7 @@ export function useMovePieces () {
     const pieceType = movingPiece.name.slice(1);
     const numCoordI = [Number(coordI[0]), Number(coordI[1])];
     const numCoordF = [Number(coordF[0]), Number(coordF[1])];
-    
+
     if (pieces[coordF] && pieces[coordF].color === color) { // cannot capture same color piece
       return false;
     }
@@ -28,10 +28,7 @@ export function useMovePieces () {
         return false;
       };
 
-      if(captureRule() && (moveOneFowardRule || moveTwoFowardRule)) {
-        return true
-      }
-
+      if(captureRule() && (moveOneFowardRule || moveTwoFowardRule)) return true;
       return false;
     }
 
@@ -54,7 +51,37 @@ export function useMovePieces () {
       }
 
       if(diagonalRule && obstacleRule()) return true;
+      return false;
     }
+
+    if (pieceType === 'Rook') {
+      const crossRule = (numCoordF[0] - numCoordI[0] === 0 || numCoordF[1] - numCoordI[1] === 0);
+      
+      const obstacleRule = () => {
+        let step;
+        let direction;
+        if (numCoordF[0] - numCoordI[0] !== 0) {
+          step = (numCoordF[0] - numCoordI[0]) / Math.abs(numCoordF[0] - numCoordI[0]);
+          direction = 0;
+        } else {
+            step =  (numCoordF[1] - numCoordI[1]) / Math.abs(numCoordF[1] - numCoordI[1]);
+            direction = 1;
+        }
+
+        const blockCoord = [...numCoordI];
+        blockCoord[direction] = blockCoord[direction] + step;
+
+        while (blockCoord[direction] !== numCoordF[direction]) {
+          if(pieces[blockCoord[0].toString() + blockCoord[1].toString()]) return false;
+          blockCoord[direction] = blockCoord[direction] + step;
+        }
+        return true;
+      }
+
+      if (crossRule && obstacleRule()) return true;
+      return false;
+    }
+
     return false;    
   }
 
