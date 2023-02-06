@@ -59,53 +59,73 @@ export function useMovePieces () {
       if (lShapeRule) return true;
     }
 
+    const bishopObstacleRule = (xMove, yMove) => {
+      const xStep = (xMove > 0) ? 1 : -1;
+      const yStep = (yMove > 0) ? 1 : -1;
+      
+      let blockCoord = [numCoordI[0] + yStep, numCoordI[1] + xStep];
+      while (blockCoord[0] !== numCoordF[0]) {
+        if(pieces[blockCoord[0].toString() + blockCoord[1].toString()]) return false;
+        blockCoord[0] = blockCoord[0] + yStep;
+        blockCoord[1] = blockCoord[1] + xStep;
+      }
+      return true;
+    }
     if (pieceType === 'Bishop') {
       const yMove = numCoordF[0] - numCoordI[0];
       const xMove = numCoordF[1] - numCoordI[1];
       
       const diagonalRule = (xMove === yMove) || (xMove === -yMove);
-      const obstacleRule = () => {
-        const xStep = (xMove > 0) ? 1 : -1;
-        const yStep = (yMove > 0) ? 1 : -1;
-        
-        let blockCoord = [numCoordI[0] + yStep, numCoordI[1] + xStep];
-        while (blockCoord[0] !== numCoordF[0]) {
-          if(pieces[blockCoord[0].toString() + blockCoord[1].toString()]) return false;
-          blockCoord[0] = blockCoord[0] + yStep;
-          blockCoord[1] = blockCoord[1] + xStep;
-        }
-        return true;
-      }
+      const obstacleRule = bishopObstacleRule(xMove, yMove);
 
-      if(diagonalRule && obstacleRule()) return true;
+      if(diagonalRule && obstacleRule) return true;
       return { error: true };
     }
 
-    if (pieceType === 'Rook') {
-      const crossRule = (numCoordF[0] - numCoordI[0] === 0 || numCoordF[1] - numCoordI[1] === 0);
-      const obstacleRule = () => {
-        let step;
-        let direction;
-        if (numCoordF[0] - numCoordI[0] !== 0) {
-          step = (numCoordF[0] - numCoordI[0]) / Math.abs(numCoordF[0] - numCoordI[0]);
-          direction = 0;
-        } else {
-            step =  (numCoordF[1] - numCoordI[1]) / Math.abs(numCoordF[1] - numCoordI[1]);
-            direction = 1;
-        }
-
-        const blockCoord = [...numCoordI];
-        blockCoord[direction] = blockCoord[direction] + step;
-
-        while (blockCoord[direction] !== numCoordF[direction]) {
-          if(pieces[blockCoord[0].toString() + blockCoord[1].toString()]) return false;
-          blockCoord[direction] = blockCoord[direction] + step;
-        }
-        return true;
+    const rookObstacleRule = () => {
+      let step;
+      let direction;
+      if (numCoordF[0] - numCoordI[0] !== 0) {
+        step = (numCoordF[0] - numCoordI[0]) / Math.abs(numCoordF[0] - numCoordI[0]);
+        direction = 0;
+      } else {
+          step =  (numCoordF[1] - numCoordI[1]) / Math.abs(numCoordF[1] - numCoordI[1]);
+          direction = 1;
       }
 
-      if (crossRule && obstacleRule()) return true;
+      const blockCoord = [...numCoordI];
+      blockCoord[direction] = blockCoord[direction] + step;
+
+      while (blockCoord[direction] !== numCoordF[direction]) {
+        if(pieces[blockCoord[0].toString() + blockCoord[1].toString()]) return false;
+        blockCoord[direction] = blockCoord[direction] + step;
+      }
+      return true;
+    }
+    if (pieceType === 'Rook') {
+      const crossRule = (numCoordF[0] - numCoordI[0] === 0 || numCoordF[1] - numCoordI[1] === 0);
+      const obstacleRule = rookObstacleRule();
+
+      if (crossRule && obstacleRule) return true;
       return { error: true };
+    }
+
+    if (pieceType === 'Queen') {
+      const yMove = numCoordF[0] - numCoordI[0];
+      const xMove = numCoordF[1] - numCoordI[1];
+      
+      const crossRule = (xMove === 0 || yMove === 0);
+      const diagonalRule = (xMove === yMove) || (xMove === -yMove);
+    
+      if ((crossRule && rookObstacleRule() || diagonalRule && bishopObstacleRule(xMove, yMove))) return true;
+    }
+
+    if (pieceType === 'King') {
+      const yMove = numCoordF[0] - numCoordI[0];
+      const xMove = numCoordF[1] - numCoordI[1];
+      const kingBoundaryRule = (Math.abs(xMove) <= 1 && Math.abs(yMove) <= 1);
+    
+      if (kingBoundaryRule) return true;
     }
 
     return { error: true };    
