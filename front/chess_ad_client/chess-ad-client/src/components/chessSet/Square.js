@@ -10,7 +10,7 @@ export default function Square ({ coordinates, color, pieces, setPieces, selecte
     if(moveInfo.error) return setSelectedSquare(coordinates);
     const newPosition = updatePosition(selectedSquare, coordinates, pieces, moveInfo.specialMove);
     setPieces(newPosition);
-    setSelectedSquare(null);
+    return setSelectedSquare(null);
     }
     
   const selectSquare = () => {

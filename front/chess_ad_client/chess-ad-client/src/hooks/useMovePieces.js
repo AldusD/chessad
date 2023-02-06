@@ -5,9 +5,10 @@ export function useMovePieces () {
     const pieceType = movingPiece.name.slice(1);
     const numCoordI = [Number(coordI[0]), Number(coordI[1])];
     const numCoordF = [Number(coordF[0]), Number(coordF[1])];
-
-    if (pieces[coordF] && pieces[coordF].color === color) { // cannot capture same color piece
-      return { error: true };
+    
+    // cannot capture same color piece + castle exception
+    if (pieces[coordF] && pieces[coordF].color === color) {
+      if(!(pieceType === 'King' && pieces[coordF].name.slice(1) === 'Rook')) return { error: true };
     }
 
     if (pieceType === 'Pawn') {
@@ -124,7 +125,33 @@ export function useMovePieces () {
       const yMove = numCoordF[0] - numCoordI[0];
       const xMove = numCoordF[1] - numCoordI[1];
       const kingBoundaryRule = (Math.abs(xMove) <= 1 && Math.abs(yMove) <= 1);
-    
+      const castleRule = () => {
+        // capture on same color rule includes an exception to allow castle  
+        const myRookRule = pieces[coordF] && pieces[coordF].color === color; 
+        const notMovedRule = myRookRule && !(movingPiece.hasMoved || pieces[coordF].hasMoved);
+        if (!notMovedRule) return false;
+        
+        const CastleType = Math.abs(numCoordF[1] - numCoordI[1]) - 1;
+        const step = Math.abs(numCoordF[1] - numCoordI[1]) /  (numCoordF[1] - numCoordI[1]);
+        
+        // verify 'free' path
+        for (let i = 1; i <= CastleType; i++) { 
+          const blockCoord = coordI[0] + (numCoordI[1] + i * step);
+          if (pieces[blockCoord]) return false;
+        };
+
+        // verify safe path (TO BE IMPLEMENTED)
+
+        return true;
+      }
+
+      if (castleRule()) return { specialMove: { 
+          name: 'castle', coordI, numCoordI, coordF, numCoordF, pieces, 
+          info: {
+              direction: (numCoordF[1] > numCoordI[1]) ? 1 : -1
+            } 
+          } 
+        };
       if (kingBoundaryRule) return true;
     }
 
@@ -132,26 +159,48 @@ export function useMovePieces () {
   }
 
   const handleSpecialMove = specialMove => {
-    const { pieces, coordI, numCoordI, coordF, numCoordF } = specialMove;
-    if (specialMove.name === 'pawnJump') {
+    const { name, pieces, coordI, numCoordI, coordF, numCoordF } = specialMove;
+    if (name === 'pawnJump') {
       pieces[coordI].jumpTime = pieces.move;
+      return;
     }
 
-    if (specialMove.name === 'enPassant') {
+    if (name === 'enPassant') {
       const { capturedPawnCoord } =  specialMove.info;
       pieces[capturedPawnCoord] = null;
+      return;
+    }
+
+    if (name === 'castle') {
+      const { direction } = specialMove.info;
+      const kingCoordF = coordI[0] + (numCoordI[1] + 2 * direction);
+      const rookCoordF = coordI[0] + (numCoordI[1] + 1 * direction); 
+      const kingState = movePiece(pieces, coordI, kingCoordF);
+      const kingAndRookState = movePiece(kingState, coordF, rookCoordF);
+      return { position: kingAndRookState };
     }
   } 
 
-  const updatePosition = (coordI, coordF, pieces, specialMove = null) => {
-    if (specialMove) handleSpecialMove(specialMove);
-    
-    pieces.move = pieces.move + 1;
+  const movePiece = (pieces, coordI, coordF) => {
     const currentState = {...pieces};
     const movingPiece = {...currentState[coordI]};
     currentState[coordI] = null;
     currentState[coordF] = movingPiece;
+    return currentState
+  }
 
+  const updatePosition = (coordI, coordF, pieces, specialMove = null) => {
+    if (specialMove) {
+      const action = handleSpecialMove(specialMove);
+      if (action?.position) {
+        console.log(action.position)
+        return action.position;}
+    }
+    
+    pieces.move = pieces.move + 1;
+    pieces[coordI].hasMoved = true;
+
+    const currentState = movePiece({...pieces}, coordI, coordF);
     return currentState;
   }
   return [
