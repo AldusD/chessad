@@ -6,10 +6,11 @@ export default function Square ({ coordinates, color, pieces, setPieces, selecte
   const [validateMove, updatePosition] = useMovePieces(); 
   
   const movePiece = () => {
-    if(!validateMove(selectedSquare, coordinates, pieces)) return setSelectedSquare(coordinates);
-    const newPosition = updatePosition(selectedSquare, coordinates, pieces);
+    const moveInfo = validateMove(selectedSquare, coordinates, pieces);
+    if(moveInfo.error) return setSelectedSquare(coordinates);
+    const newPosition = updatePosition(selectedSquare, coordinates, pieces, moveInfo.specialMove);
     setPieces(newPosition);
-    setSelectedSquare(null);
+    return setSelectedSquare(null);
     }
     
   const selectSquare = () => {
