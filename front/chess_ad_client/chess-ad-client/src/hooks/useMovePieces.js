@@ -29,22 +29,27 @@ export function useMovePieces () {
       const enPassantRule = () => {
         const jumpPawn = (color === 'white') ? (numCoordF[0] + 1) + coordF[1] : (numCoordF[0] - 1) + coordF[1];
         if (Math.abs(numCoordI[1] - numCoordF[1]) === 1) {
-          if (pieces[jumpPawn] && pieces[jumpPawn].jumpTime === pieces.move - 1) return { valid: true, enPassant: jumpPawn }; 
-          if (pieces[coordF]) return { valid: true };
+          if (pieces[jumpPawn] && pieces[jumpPawn].jumpTime === pieces.move - 1) 
+            return { valid: true, enPassant: jumpPawn }; 
+          
+          if (pieces[coordF])  
+            return { valid: true };
+          
           return false;
         }
         return { valid: true };
       };
       const promotionRule = () => {
-        if (coordF[0] === 1 && color === 'white' || coordF[0] === 8 && color === 'black') {
-          return false // to be implemented :)
-        }
+        const backrankRule = coordF[0] === '1' && color === 'white' || coordF[0] === '8' && color === 'black';
+        const noJumpsRule = Math.abs(numCoordF[0] - numCoordI[0]) === 1;
+        if (backrankRule && noJumpsRule) return true;
+
         return false;
       }
 
-
       const passant = enPassantRule();
       if (captureRule() && passant.valid) {
+        if (promotionRule()) return { specialMove: { name: 'promotion', coordI, numCoordI, coordF, numCoordF, pieces } };
         if (passant.enPassant) return { specialMove: { name: 'enPassant', coordI, numCoordI, coordF, numCoordF, pieces, info: { capturedPawnCoord: passant.enPassant } } }; 
         if (moveOneFowardRule) return true;
         if (moveTwoFowardRule) return { specialMove: { name: 'pawnJump', coordI, numCoordI, coordF, numCoordF, pieces } }
@@ -171,10 +176,20 @@ export function useMovePieces () {
       return;
     }
 
+    if (name === 'promotion') {
+      // (TO BE IMPLEMENTED) promotion to pieces other than queen 
+      pieces[coordI].name = (coordF[0] === '1') ? 'wQueen' : 'bQueen';
+      return;
+    }
+
     if (name === 'castle') {
       const { direction } = specialMove.info;
       const kingCoordF = coordI[0] + (numCoordI[1] + 2 * direction);
-      const rookCoordF = coordI[0] + (numCoordI[1] + 1 * direction); 
+      const rookCoordF = coordI[0] + (numCoordI[1] + 1 * direction);
+      
+      pieces[coordI].hasMoved = true;
+      pieces[coordF].hasMoved = true;
+
       const kingState = movePiece(pieces, coordI, kingCoordF);
       const kingAndRookState = movePiece(kingState, coordF, rookCoordF);
       return { position: kingAndRookState };
@@ -192,9 +207,7 @@ export function useMovePieces () {
   const updatePosition = (coordI, coordF, pieces, specialMove = null) => {
     if (specialMove) {
       const action = handleSpecialMove(specialMove);
-      if (action?.position) {
-        console.log(action.position)
-        return action.position;}
+      if (action?.position) return action.position;
     }
     
     pieces.move = pieces.move + 1;
