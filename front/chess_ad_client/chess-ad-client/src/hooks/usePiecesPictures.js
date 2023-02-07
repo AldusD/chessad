@@ -12,12 +12,14 @@ import wKing from '../assets/pieces/w-king.png';
 import bKing from '../assets/pieces/b-king.png';
 import pwKnight from '../assets/pieces/w-p-knight.png';
 import pbKnight from '../assets/pieces/b-p-knight.png';
+import pwBishop from '../assets/pieces/p-w-bishop.png';
+import pbBishop from '../assets/pieces/p-b-bishop.png';
 
 export function usePiecesPictures () {
     const pieces = {
         wPawn, bPawn, 
         wKnight, bKnight, pwKnight, pbKnight,
-        wBishop, bBishop,
+        wBishop, bBishop, pwBishop, pbBishop,
         wRook, bRook,
         wQueen, bQueen,
         wKing, bKing

@@ -34,8 +34,8 @@ export function useChessSet () {
       if (i === 1 || i === 8) name = 'wRook';
       else if (i === 2 || i === 7) name = 'wKnight';
       else if (i === 3 || i === 6) name = 'wBishop';
-      else if (i === 5) name = 'wKing';
       else if (i === 4) name = 'wQueen';
+      else if (i === 5) name = 'wKing';
       
       toSetPieces['8' + i] = {
         name,
@@ -46,8 +46,8 @@ export function useChessSet () {
       if (i === 1 || i === 8) name = 'bRook';
       else if (i === 2 || i === 7) name = 'bKnight';
       else if (i === 3 || i === 6) name = 'bBishop';
-      else if (i === 4) name = 'bKing';
-      else if (i === 5) name = 'bQueen';
+      else if (i === 4) name = 'bQueen';
+      else if (i === 5) name = 'bKing';
       
       toSetPieces['1' + i] = {
         name,

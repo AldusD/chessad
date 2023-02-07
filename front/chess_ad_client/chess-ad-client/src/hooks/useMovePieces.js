@@ -225,7 +225,7 @@ export function useMovePieces () {
     const pieceType = pieces[coord].name.slice(1);
     const { name } = pieces[coord];
 
-    if (pieceType === 'Knight') {
+    if (pieceType === 'Knight' || pieceType === 'Bishop') {
       pieces[coord].name = 'p' + name;
       pieces[coord].active = 0;
     }
@@ -233,11 +233,15 @@ export function useMovePieces () {
 
   const increaseXp = (pieces, coordI, coordF) => {
     const movingPiece = pieces[coordI];
-    if (movingPiece.xp > 5) return;
+    if (movingPiece.name.slice(1) === 'Pawn' || movingPiece.name.slice(1) === 'King') return;
+    if (movingPiece.xp >= 5) return movingPiece.xp = 5;
 
     movingPiece.xp = movingPiece.xp + 1;
-    if (pieces[coordF]) movingPiece.xp = movingPiece.xp + pieces[coordF].xp;
-    if (movingPiece.xp >= 5 && movingPiece.name[0] !== 'p') evolve(pieces, coordI);
+    if (pieces[coordF]) {
+      const increment = movingPiece.xp + pieces[coordF].xp;
+      movingPiece.xp = ((movingPiece.xp + increment) < 5) ? movingPiece.xp + increment : 5      
+    }
+    if (movingPiece.xp === 5 && movingPiece.name[0] !== 'p') evolve(pieces, coordI);
   }
 
   const changePositionStats = (pieces, coordI, coordF) => {

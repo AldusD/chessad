@@ -9,6 +9,7 @@ export default function Chessboard() {
   const [squares, setSquares] = useState(startCoordinates());
   const [selectedSquare, setSelectedSquare] = useState(null);
   const [usingSpell, setUsingSpell] = useState(false);
+  const [refresh, setRefresh] = useState(false);
   useEffect(() => {
     console.log(usingSpell);
   }, [usingSpell])
@@ -24,7 +25,8 @@ export default function Chessboard() {
           setSelectedSquare={setSelectedSquare}
           selectedSquare={selectedSquare}
           usingSpell={usingSpell}
-          setUsingSpell={setUsingSpell} />
+          setUsingSpell={setUsingSpell}
+          refresh={{value: refresh, set: setRefresh }} />
         )}
         <button active={usingSpell ? 'active' : 'inactive'} onClick={() => setUsingSpell(!usingSpell)} >Spell</button>
     </Board>
