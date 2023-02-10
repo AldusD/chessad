@@ -13,6 +13,7 @@ export default function Square ({ coordinates, color, pieces, setPieces, selecte
       usingSpell
     });
     if(moveInfo.error) return setSelectedSquare(coordinates);
+    
     setPieces(moveInfo.position);
     setUsingSpell(false);
     refresh.set(!refresh.value);
@@ -24,7 +25,7 @@ export default function Square ({ coordinates, color, pieces, setPieces, selecte
     if(coordinates === selectedSquare) return setSelectedSquare(null);
       
     if (previousPiece) {
-      return movePiece(usingSpell);
+      return movePiece();
     }      
     setSelectedSquare(coordinates);
     }
@@ -36,7 +37,7 @@ export default function Square ({ coordinates, color, pieces, setPieces, selecte
           color={color} >
 
           {(selectedSquare === coordinates) ? <SelectedFilter /> : <></>}
-          {pieces[coordinates] ? 
+          {(pieces && pieces[coordinates]) ? 
             <Piece
               pieceInfo={{...pieces[coordinates]}} 
               move={pieces.move} 

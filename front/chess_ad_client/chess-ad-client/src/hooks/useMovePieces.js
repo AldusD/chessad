@@ -3,8 +3,10 @@ const PIECES_XP_BARRIER = { KNIGHT: 5, BISHOP: 5, ROOK: 10, QUEEN: 10 };
 export function useMovePieces () {
   const move = (moveInfo) => {
     const moveDetails = validateMove({...moveInfo});
-    if(moveDetails.error) return { error: true };
-    
+    if (moveDetails.error) return { error: true };
+    if (moveDetails.abortUpdate) return { position: moveDetails.pieces };
+
+    changePositionStats(moveDetails);
     const position = updatePosition(moveDetails);
     return { position };
   }
@@ -140,6 +142,17 @@ export function useMovePieces () {
     return { error: true };
   }
 
+  const validateZombie = moveInfo => {
+    const { coordI, coordF, numCoordI, numCoordF, pieces, color, movingPiece } = moveInfo;
+    const direction = (color === 'white') ? -1 : 1;
+    const oneFowardRule = (numCoordF[0] - numCoordI[0]) === direction;
+    const boundaryRule = Math.abs(numCoordF[1] - numCoordI[1]) <= 1;
+    const notRottenRule = movingPiece.active > pieces.move;
+    
+    if (oneFowardRule && boundaryRule && notRottenRule) return true;
+    return { error: true };
+  }
+
   const validateMove = (moveInfo) => {
     const { coordI, coordF, pieces, usingSpell } = moveInfo;
     const details = { data: { coordI, coordF, pieces, specialMove: false } };
@@ -189,27 +202,32 @@ export function useMovePieces () {
       return true;
     }
 
-      // cannot capture same color piece + castle exception
+      // cannot capture same color piece + exceptions
     if (pieces[coordF] && pieces[coordF].color === color) {
-      if(!(pieceType === 'King' && pieces[coordF].name.slice(1) === 'Rook')) return { error: true };
+      const destinationType = pieces[coordF].name.slice(1);
+      const castleException = (pieceType === 'King' && destinationType === 'Rook');
+      const rottenZombieException = (destinationType === 'Zombie' && pieces[coordF].active <= pieces.move);
+      if(!castleException && !rottenZombieException) return { error: true };
     }
 
     // cannot capture flying powerKnight
     const isPowerKnight = pieces[coordF]?.name.slice(2) === 'Knight';
     const isActive = pieces[coordF]?.active > pieces.move;
     if (isPowerKnight && isActive) return { error: true };
-    
+
     if (pieceType === 'Pawn') details.data = { ...details.data , ...validatePawn({...info}) };
     if (pieceType === 'Knight') details.data = { ...details.data , ...validateKnight({...info}) };
     if (pieceType === 'Bishop') details.data = { ...details.data , ...validateBishop({ ...info, bishopObstacleRule }) };
     if (pieceType === 'Rook') details.data = { ...details.data , ...validateRook({ ...info, rookObstacleRule }) };
     if (pieceType === 'Queen') details.data = { ...details.data , ...validateQueen({ ...info, bishopObstacleRule, rookObstacleRule }) };  
     if (pieceType === 'King') details.data = { ...details.data , ...validateKing({...info}) };
+    if (pieceType === 'Zombie') details.data = {...details.data, ...validateZombie({...info})};
 
     // activating spell
     if (usingSpell) {
       const spell = handleSpell({ pieces, pieceType, coordF, coordI });
       if (spell.error) return { error: true };
+      details.data.abortUpdate = spell.abortUpdate;
       details.data.pieces = spell.pieces; 
     }
 
@@ -245,11 +263,11 @@ export function useMovePieces () {
       pieces[coordI].hasMoved = true;
       pieces[coordF].hasMoved = true;
 
-      const kingState = movePiece(pieces, coordI, kingCoordF);
-      const kingAndRookState = movePiece(kingState, coordF, rookCoordF);
+      const kingState = movePiece({ pieces, coordI, kingCoordF });
+      const kingAndRookState = movePiece({ kingState, coordF, rookCoordF });
       return { position: kingAndRookState };
     }
-  } 
+  }
 
   const handleSpell = spellData => {
     const { pieces, pieceType, coordI, coordF } = spellData;
@@ -259,21 +277,31 @@ export function useMovePieces () {
     const isPowerful = piece.name[0] === 'p';
 
     if (!isPowerful || !enoughXp) return { error: true }; 
+    pieces[coordI].xp = -1;
+
     if (pieceType === 'Knight') {
-      pieces[coordI].xp = -1;
       pieces[coordI].active = pieces.move + 5;
       return { pieces };
     }
+
     if (pieceType === 'Bishop') {
-      pieces[coordI].xp = -1;
-      console.log('get alive!!');
-      return { pieces };
+      changePositionStats({ pieces, coordI, coordF })
+      const bishop = pieces[coordI]
+      pieces[coordF] = bishop;
+      pieces[coordI] = {
+        name: bishop.color[0] + 'Zombie',
+        color: bishop.color,
+        active: (pieces.move - 1) + 4,
+        xp: 0
+      }
+      return { abortUpdate: true, pieces };
     }
 
     return { error: false };
   }
 
-  const movePiece = (pieces, coordI, coordF) => {
+  const movePiece = (moveDetails) => {
+    const { pieces, coordI, coordF } = moveDetails;
     const currentState = {...pieces};
     const movingPiece = {...currentState[coordI]};
     currentState[coordI] = null;
@@ -292,9 +320,11 @@ export function useMovePieces () {
     }
   }
 
-  const increaseXp = (pieces, coordI, coordF) => {
+  const increaseXp = moveDetails => {
+    const { pieces, coordI, coordF } = moveDetails;
     const movingPiece = pieces[coordI];
-    if (movingPiece.name.slice(1) === 'Pawn' || movingPiece.name.slice(1) === 'King') return;
+    const type = movingPiece.name.slice(1);
+    if (type === 'Pawn' || type === 'King' || type === 'Zombie') return;
     if (movingPiece.xp >= 5) return movingPiece.xp = 5;
 
     movingPiece.xp = movingPiece.xp + 1;
@@ -305,22 +335,21 @@ export function useMovePieces () {
     if (movingPiece.xp === 5 && movingPiece.name[0] !== 'p') evolve(pieces, coordI);
   }
 
-  const changePositionStats = (pieces, coordI, coordF) => {
+  const changePositionStats = moveDetails => {
+    const { pieces, coordI, coordF } = moveDetails;
     pieces.move = pieces.move + 1;
     pieces[coordI].hasMoved = true;
-    increaseXp(pieces, coordI, coordF);
+    increaseXp(moveDetails);
   }
 
-  const updatePosition = (moveDetails) => {
+  const updatePosition = moveDetails => {
     const { coordI, coordF, pieces, specialMove } = moveDetails;
-    changePositionStats(pieces, coordI, coordF);
     if (specialMove) {
       const action = handleSpecialMove(specialMove);
       if (action?.position) return action.position;
     }
-    
-    console.log(pieces[coordI])
-    const currentState = movePiece({...pieces}, coordI, coordF);
+
+    const currentState = movePiece({ pieces: {...pieces}, coordI, coordF });
     return currentState;
   }
   return [move];

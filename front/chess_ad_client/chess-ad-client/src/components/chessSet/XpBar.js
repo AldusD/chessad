@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 
-export default function XpBar ({ name, xp, xpBarrier }) {
+export default function XpBar ({ name, xp, xpBarrier, refresh }) {
   const [filled, setFilled] = useState();
   const type = (name[0] != 'p') ? name.slice(1) : name.slice(2);
-  const invalidType = (type === 'Pawn' || type === 'King');
+  const invalidType = (type === 'Pawn' || type === 'King' || type === 'Zombie');
   useEffect(() => {
     setFilled(`${7 - ((xp / xpBarrier * 7))}vh`);
-    console.log(filled, xp, xpBarrier)
-  }, [invalidType])   
+  }, [refresh])   
   
   return (
     <>
@@ -25,8 +24,8 @@ const Bar = styled.div`
   height: 7vh;
   width: 1vh;
   background-color: green;
-  z-index: 1;
-  margin-right: 1vh;
+  position: absolute;
+  right: 0.25rem;
   
   .filled {
   content: '';
