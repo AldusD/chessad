@@ -1,20 +1,24 @@
 import { useState, useEffect } from "react";
 import styled from "styled-components";
 import { usePiecesPictures } from "../../hooks/usePiecesPictures"
+import XpBar from "./XpBar";
 
 export default function Piece({ pieceInfo, move, refresh }) {
-  const { name, color, xp, active } = pieceInfo;
+  const { name, color, active } = pieceInfo;
   const [pieces] = usePiecesPictures();
   const [isActive, setIsActive] = useState();
   useEffect(() => {
-    console.log(active, move)
     setIsActive(active > move);
   }, [refresh.value]);
 
   return (
-    <PieceStyle src={pieces[name]} size={(name[0] === 'p') ? '10vh' : '8vh'} >
-      {(isActive) ? <Filter /> : <></>}
-    </PieceStyle>
+    <PieceContainer>
+      <PieceStyle src={pieces[name]} size={(name[0] === 'p') ? '10vh' : '8vh'} >
+        {(isActive) ? <Filter /> : <></>}
+      </PieceStyle>
+      <XpBar name={pieceInfo.name} xp={pieceInfo.xp} xpBarrier={pieceInfo.xpBarrier} />
+    </PieceContainer>
+
   )
 }
 
@@ -40,4 +44,9 @@ const Filter = styled.div`
   width: 10vh;
   background-color: #6c277b80;
   z-index: 1;
+`;
+
+const PieceContainer = styled.div`
+  display: flex;
+  align-items: center;
 `;

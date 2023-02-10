@@ -30,27 +30,27 @@ export function useChessSet () {
 
     // back rank pieces
     for(let i = 1; i <= 8; i++) {
-      let name;
-      if (i === 1 || i === 8) name = 'wRook';
-      else if (i === 2 || i === 7) name = 'wKnight';
-      else if (i === 3 || i === 6) name = 'wBishop';
-      else if (i === 4) name = 'wQueen';
-      else if (i === 5) name = 'wKing';
+      let info = {};
+      if (i === 1 || i === 8) info = { name: 'wRook', xpBarrier: 10 };
+      else if (i === 2 || i === 7) info = { name: 'wKnight', xpBarrier: 5 };
+      else if (i === 3 || i === 6) info = { name: 'wBishop', xpBarrier: 5 };
+      else if (i === 4) info = { name: 'wQueen', xpBarrier: 10 };
+      else if (i === 5) info = { name: 'wKing' };
       
       toSetPieces['8' + i] = {
-        name,
+        ...info,
         color: 'white',
         xp: 0
       }
 
-      if (i === 1 || i === 8) name = 'bRook';
-      else if (i === 2 || i === 7) name = 'bKnight';
-      else if (i === 3 || i === 6) name = 'bBishop';
-      else if (i === 4) name = 'bQueen';
-      else if (i === 5) name = 'bKing';
+      if (i === 1 || i === 8) info = { name: 'bRook', xpBarrier: 10 };
+      else if (i === 2 || i === 7) info = { name: 'bKnight', xpBarrier: 5 };
+      else if (i === 3 || i === 6) info = { name: 'bBishop', xpBarrier: 5 };
+      else if (i === 4) info = { name: 'bQueen', xpBarrier: 10 };
+      else if (i === 5) info = { name: 'bKing' };
       
       toSetPieces['1' + i] = {
-        name,
+        ...info,
         color: 'black',
         xp: 0
       }

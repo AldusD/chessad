@@ -3,13 +3,17 @@ import { useMovePieces } from "../../hooks/useMovePieces";
 import Piece from "./Piece";
 
 export default function Square ({ coordinates, color, pieces, setPieces, selectedSquare, setSelectedSquare, usingSpell, setUsingSpell, refresh }) {
-  const [validateMove, updatePosition] = useMovePieces(); 
+  const [move] = useMovePieces(); 
   
-  const movePiece = (usingSpell) => {
-    const moveInfo = validateMove(selectedSquare, coordinates, pieces, usingSpell);
+  const movePiece = () => {
+    const moveInfo = move({ 
+      coordI: selectedSquare, 
+      coordF: coordinates, 
+      pieces,
+      usingSpell
+    });
     if(moveInfo.error) return setSelectedSquare(coordinates);
-    const newPosition = updatePosition(selectedSquare, coordinates, pieces, moveInfo.specialMove);
-    setPieces(newPosition);
+    setPieces(moveInfo.position);
     setUsingSpell(false);
     refresh.set(!refresh.value);
     return setSelectedSquare(null);

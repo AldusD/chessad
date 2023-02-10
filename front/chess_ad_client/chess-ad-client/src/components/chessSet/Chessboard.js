@@ -10,9 +10,7 @@ export default function Chessboard() {
   const [selectedSquare, setSelectedSquare] = useState(null);
   const [usingSpell, setUsingSpell] = useState(false);
   const [refresh, setRefresh] = useState(false);
-  useEffect(() => {
-    console.log(usingSpell);
-  }, [usingSpell])
+
   return (
     <Board>
       {squares?.map((square, index) => 
@@ -26,9 +24,13 @@ export default function Chessboard() {
           selectedSquare={selectedSquare}
           usingSpell={usingSpell}
           setUsingSpell={setUsingSpell}
-          refresh={{value: refresh, set: setRefresh }} />
+          refresh={ {value: refresh, set: setRefresh }} />
         )}
-        <button active={usingSpell ? 'active' : 'inactive'} onClick={() => setUsingSpell(!usingSpell)} >Spell</button>
+        {usingSpell ? 
+          <button onClick={() => setUsingSpell(!usingSpell)} className={'on'} >Spell</button>
+          :
+          <button onClick={() => setUsingSpell(!usingSpell)} className={'off'} >Spell</button>
+        }
     </Board>
 )};
 
@@ -45,9 +47,16 @@ const Board = styled.div`
     width: 6rem;
     margin-top: 2vh;
     border: none;
-    border-radius: 4px;
-
-    background-color: ${props => props.acitve === 'active' ? 'green' : 'red'};
-    color: ${props => props.acitve === 'active' ? 'yellow' : 'orange'};
+    border-radius: 4px;  
 }
+
+.on {
+  background-color: green;
+  color: yellow;
+}
+
+.off {
+  background-color: red;
+  color: orange;
+}  
 `;
