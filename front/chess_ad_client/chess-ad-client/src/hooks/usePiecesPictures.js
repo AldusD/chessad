@@ -8,6 +8,8 @@ import wRook from '../assets/pieces/w-rook.png';
 import bRook from '../assets/pieces/b-rook.png';
 import wQueen from '../assets/pieces/w-queen.png';
 import bQueen from '../assets/pieces/b-queen.png';
+import pbQueen from '../assets/pieces/b-p-queen.png';
+import pwQueen from '../assets/pieces/w-p-queen.png';
 import wKing from '../assets/pieces/w-king.png';
 import bKing from '../assets/pieces/b-king.png';
 import pwKnight from '../assets/pieces/w-p-knight.png';
@@ -26,7 +28,7 @@ export function usePiecesPictures () {
         wKnight, bKnight, pwKnight, pbKnight,
         wBishop, bBishop, pwBishop, pbBishop,
         wRook, bRook, pwRook, pbRook,
-        wQueen, bQueen,
+        wQueen, bQueen, pwQueen, pbQueen,
         wKing, bKing,
         wZombie, bZombie,
         sBroken

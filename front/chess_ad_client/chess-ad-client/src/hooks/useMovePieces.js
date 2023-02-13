@@ -334,6 +334,18 @@ export function useMovePieces () {
       return { abortUpdate: true, pieces };
     }
 
+    if (pieceType === 'Queen') {
+      const queen = pieces[coordI];
+      const isPieceValid = piece => piece[1]?.name.includes('Knight') || piece[1]?.name.includes('Bishop') || piece[1]?.name.includes('Rook');  
+      const affectedPieces = Object.entries(pieces).filter(piece => (piece[1]?.color === queen.color && isPieceValid(piece)));
+      for (let i = 0; i < affectedPieces.length; i++) {
+        const p = affectedPieces[i];
+        pieces[p[0]].xp = pieces[p[0]].xpBarrier; 
+      }
+
+      return { pieces };
+    }
+
     return { error: false };
   }
 
@@ -347,15 +359,11 @@ export function useMovePieces () {
   }
 
   const evolve = (pieces, coord) => {
-    console.log(pieces)
     if (pieces[coord].name[0] === 'p') return;
     const pieceType = pieces[coord].name.slice(1);
     const { name } = pieces[coord];
-
-    if (pieceType != 'Pawn' && pieceType != 'King' && pieceType != 'Zombie' && pieceType != 'Queen') {
-      pieces[coord].name = 'p' + name;
-      pieces[coord].active = 0;
-    }
+    pieces[coord].name = 'p' + name;
+    pieces[coord].active = 0;
   }
 
   const increaseXp = moveDetails => {
@@ -365,15 +373,14 @@ export function useMovePieces () {
     const xpBarrier = movingPiece.xpBarrier;
 
     if (type === 'Pawn' || type === 'King' || type === 'Zombie') return;
-    if (movingPiece.xp >= xpBarrier) return movingPiece.xp = xpBarrier;
 
-    movingPiece.xp = movingPiece.xp + 1;
+    movingPiece.xp = (movingPiece.xp >= movingPiece.xpBarrier) ? movingPiece.xpBarrier : movingPiece.xp + 1;
     if (pieces[coordF]) {
       const increment = pieces[coordF].xp;
-      movingPiece.xp = ((movingPiece.xp + increment) < xpBarrier) ? movingPiece.xp + increment : xpBarrier      
+      movingPiece.xp = ((movingPiece.xp + increment) < xpBarrier) ? movingPiece.xp + increment : xpBarrier;
     }
-    console.log(movingPiece);
     if (movingPiece.xp === xpBarrier && movingPiece.name[0] !== 'p') evolve(pieces, coordI);
+    return;
   }
 
   const changePositionStats = moveDetails => {
