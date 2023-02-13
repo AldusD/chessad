@@ -4,7 +4,7 @@ import styled from "styled-components";
 export default function XpBar ({ name, xp, xpBarrier, refresh }) {
   const [filled, setFilled] = useState();
   const type = (name[0] != 'p') ? name.slice(1) : name.slice(2);
-  const invalidType = (type === 'Pawn' || type === 'King' || type === 'Zombie');
+  const invalidType = (type === 'Pawn' || type === 'King' || type === 'Zombie' || type === 'Broken');
   useEffect(() => {
     setFilled(`${7 - ((xp / xpBarrier * 7))}vh`);
   }, [refresh])   

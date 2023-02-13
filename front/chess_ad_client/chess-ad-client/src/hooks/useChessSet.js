@@ -31,7 +31,7 @@ export function useChessSet () {
     // back rank pieces
     for(let i = 1; i <= 8; i++) {
       let info = {};
-      if (i === 1 || i === 8) info = { name: 'wRook', xpBarrier: 10 };
+      if (i === 1 || i === 8) info = { name: 'wRook', xpBarrier: 7 };
       else if (i === 2 || i === 7) info = { name: 'wKnight', xpBarrier: 5 };
       else if (i === 3 || i === 6) info = { name: 'wBishop', xpBarrier: 5 };
       else if (i === 4) info = { name: 'wQueen', xpBarrier: 10 };

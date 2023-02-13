@@ -14,18 +14,22 @@ import pwKnight from '../assets/pieces/w-p-knight.png';
 import pbKnight from '../assets/pieces/b-p-knight.png';
 import pwBishop from '../assets/pieces/p-w-bishop.png';
 import pbBishop from '../assets/pieces/p-b-bishop.png';
+import pwRook from '../assets/pieces/w-p-rook.png';
+import pbRook from '../assets/pieces/b-p-rook.png';
 import wZombie from '../assets/pieces/w-zombie.png';
 import bZombie from '../assets/pieces/b-zombie.png';
+import sBroken from '../assets/pieces/s-broken.png';
 
 export function usePiecesPictures () {
     const pieces = {
         wPawn, bPawn, 
         wKnight, bKnight, pwKnight, pbKnight,
         wBishop, bBishop, pwBishop, pbBishop,
-        wRook, bRook,
+        wRook, bRook, pwRook, pbRook,
         wQueen, bQueen,
         wKing, bKing,
-        wZombie, bZombie
+        wZombie, bZombie,
+        sBroken
     }
     
     return [pieces];

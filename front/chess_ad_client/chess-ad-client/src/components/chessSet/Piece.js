@@ -7,17 +7,18 @@ export default function Piece({ pieceInfo, move, refresh }) {
   const { name, color, active } = pieceInfo;
   const [pieces] = usePiecesPictures();
   const [isActive, setIsActive] = useState();
-  const [isRottenZombie, setIsRottenZombie] = useState();
+  const [shouldDisappear, setShouldDisappear] = useState();
   useEffect(() => {
     const spellType = (active > move) ? name : '';
+    const isTemporaryPiece = (name.slice(1) === 'Zombie' || name.slice(1) === 'Broken');
+    
     setIsActive(spellType);
-    if (isActive && name.slice(1) === 'Zombie') console.log(pieceInfo)
-    setIsRottenZombie(!isActive && name.slice(1) === 'Zombie');
+    setShouldDisappear(!isActive && isTemporaryPiece);
   }, [refresh.value, isActive]);
 
   return (
     <>
-    {isRottenZombie ?
+    {shouldDisappear ?
       <></>
       :
       <PieceContainer>

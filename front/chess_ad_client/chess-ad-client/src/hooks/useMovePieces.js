@@ -1,4 +1,4 @@
-const PIECES_XP_BARRIER = { KNIGHT: 5, BISHOP: 5, ROOK: 10, QUEEN: 10 };
+const PIECES_XP_BARRIER = { KNIGHT: 5, BISHOP: 5, ROOK: 7, QUEEN: 10 };
 
 export function useMovePieces () {
   const move = (moveInfo) => {
@@ -153,6 +153,25 @@ export function useMovePieces () {
     return { error: true };
   }
 
+  const validateSpellEffects = moveInfo => {
+    const { coordF, pieces } = moveInfo;
+    const isPowerKnight = pieces[coordF]?.name.slice(2) === 'Knight';
+    const isBrokenTile = pieces[coordF]?.name.slice(1) === 'Broken';
+    const isActive = pieces[coordF]?.active > pieces.move;
+    
+    if (isActive && (isPowerKnight || isBrokenTile)) return { error: true };
+    return { error: false };
+  }
+
+  const killInvisiblePiece = moveInfo => {
+    const { coordF, pieces } = moveInfo;
+    const visiblePieces = {...pieces};
+    const isSpellPiece = pieces[coordF]?.name.slice(1) === 'Broken' || pieces[coordF]?.name.slice(1) === 'Zombie'; 
+    const isActive = pieces[coordF]?.active > pieces.move;
+    if (isSpellPiece && !isActive) visiblePieces[coordF] = null;
+    return visiblePieces; 
+  }
+
   const validateMove = (moveInfo) => {
     const { coordI, coordF, pieces, usingSpell } = moveInfo;
     const details = { data: { coordI, coordF, pieces, specialMove: false } };
@@ -202,19 +221,24 @@ export function useMovePieces () {
       return true;
     }
 
-      // cannot capture same color piece + exceptions
+    if (pieces[coordF]) {
+      const visiblePieces = killInvisiblePiece(moveInfo);
+      pieces[coordF] = visiblePieces[coordF];
+    }
+
+    // cannot capture same color piece + exceptions
     if (pieces[coordF] && pieces[coordF].color === color) {
       const destinationType = pieces[coordF].name.slice(1);
       const castleException = (pieceType === 'King' && destinationType === 'Rook');
-      const rottenZombieException = (destinationType === 'Zombie' && pieces[coordF].active <= pieces.move);
-      if(!castleException && !rottenZombieException) return { error: true };
+      if (!castleException) return { error: true };
     }
 
-    // cannot capture flying powerKnight
-    const isPowerKnight = pieces[coordF]?.name.slice(2) === 'Knight';
-    const isActive = pieces[coordF]?.active > pieces.move;
-    if (isPowerKnight && isActive) return { error: true };
+    // spell effects
+    const spellEffects = validateSpellEffects({...info});
+    if (spellEffects.error) return { error: true };
 
+    // pieces movement constraints
+    if (pieceType === 'Broken') return { error: true };
     if (pieceType === 'Pawn') details.data = { ...details.data , ...validatePawn({...info}) };
     if (pieceType === 'Knight') details.data = { ...details.data , ...validateKnight({...info}) };
     if (pieceType === 'Bishop') details.data = { ...details.data , ...validateBishop({ ...info, bishopObstacleRule }) };
@@ -222,7 +246,8 @@ export function useMovePieces () {
     if (pieceType === 'Queen') details.data = { ...details.data , ...validateQueen({ ...info, bishopObstacleRule, rookObstacleRule }) };  
     if (pieceType === 'King') details.data = { ...details.data , ...validateKing({...info}) };
     if (pieceType === 'Zombie') details.data = {...details.data, ...validateZombie({...info})};
-
+    if (details.data.error) return details.data;
+    
     // activating spell
     if (usingSpell) {
       const spell = handleSpell({ pieces, pieceType, coordF, coordI });
@@ -285,7 +310,7 @@ export function useMovePieces () {
     }
 
     if (pieceType === 'Bishop') {
-      changePositionStats({ pieces, coordI, coordF })
+      changePositionStats({ pieces, coordI, coordF });
       const bishop = pieces[coordI]
       pieces[coordF] = bishop;
       pieces[coordI] = {
@@ -293,7 +318,19 @@ export function useMovePieces () {
         color: bishop.color,
         active: (pieces.move - 1) + 4,
         xp: 0
-      }
+      };
+      return { abortUpdate: true, pieces };
+    }
+
+    if (pieceType === 'Rook') {
+      changePositionStats({ pieces, coordI, coordF });
+      pieces[coordI].xp = 0;
+      pieces[coordF] = {
+        name: 'sBroken',
+        color: 'none',
+        active: (pieces.move - 1) + 4,
+        xp: 0
+      };
       return { abortUpdate: true, pieces };
     }
 
@@ -310,11 +347,12 @@ export function useMovePieces () {
   }
 
   const evolve = (pieces, coord) => {
+    console.log(pieces)
     if (pieces[coord].name[0] === 'p') return;
     const pieceType = pieces[coord].name.slice(1);
     const { name } = pieces[coord];
 
-    if (pieceType === 'Knight' || pieceType === 'Bishop') {
+    if (pieceType != 'Pawn' && pieceType != 'King' && pieceType != 'Zombie' && pieceType != 'Queen') {
       pieces[coord].name = 'p' + name;
       pieces[coord].active = 0;
     }
@@ -324,15 +362,18 @@ export function useMovePieces () {
     const { pieces, coordI, coordF } = moveDetails;
     const movingPiece = pieces[coordI];
     const type = movingPiece.name.slice(1);
+    const xpBarrier = movingPiece.xpBarrier;
+
     if (type === 'Pawn' || type === 'King' || type === 'Zombie') return;
-    if (movingPiece.xp >= 5) return movingPiece.xp = 5;
+    if (movingPiece.xp >= xpBarrier) return movingPiece.xp = xpBarrier;
 
     movingPiece.xp = movingPiece.xp + 1;
     if (pieces[coordF]) {
       const increment = pieces[coordF].xp;
-      movingPiece.xp = ((movingPiece.xp + increment) < 5) ? movingPiece.xp + increment : 5      
+      movingPiece.xp = ((movingPiece.xp + increment) < xpBarrier) ? movingPiece.xp + increment : xpBarrier      
     }
-    if (movingPiece.xp === 5 && movingPiece.name[0] !== 'p') evolve(pieces, coordI);
+    console.log(movingPiece);
+    if (movingPiece.xp === xpBarrier && movingPiece.name[0] !== 'p') evolve(pieces, coordI);
   }
 
   const changePositionStats = moveDetails => {
