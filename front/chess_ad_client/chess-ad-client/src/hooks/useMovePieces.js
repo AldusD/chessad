@@ -339,6 +339,8 @@ export function useMovePieces () {
       return true;
     }
 
+    if ((pieces.move % 2 === 0 && color === 'white') || (pieces.move % 2 === 1 && color === 'black')) return { error: true };
+
     if (pieces[coordF]) {
       const visiblePieces = killInvisiblePiece(info);
       pieces[coordF] = visiblePieces[coordF];
