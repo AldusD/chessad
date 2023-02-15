@@ -16,6 +16,7 @@ export default function Square ({ coordinates, color, pieces, setPieces, selecte
     
     setPieces(moveInfo.position);
     setUsingSpell(false);
+    if(moveInfo.checkmate) console.log('checkmate!');
     refresh.set(!refresh.value);
     return setSelectedSquare(null);
     }
