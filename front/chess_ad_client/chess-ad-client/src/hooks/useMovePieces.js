@@ -198,7 +198,7 @@ export function useMovePieces () {
       }
 
       // in double checks only attempt is to move the king
-      if (checkingPieces.length > 1) return { checkmate: true };
+      if (checkingPieces.length > 1) return { checkmate: color.toUpperCase() };
 
       // checking piece blocking / capturing attempt
       // { coordI, coordF, numCoordI, numCoordF, pieces, color }      
@@ -276,7 +276,7 @@ export function useMovePieces () {
         const squareTocheck = [checkPiece.coord, [Number(checkPiece.coord[0]), Number(checkPiece.coord[1])]];
         while (squareTocheck[0] != kingSquare[0]) {
           const block = isInCheck({ pieces, color, kingSquare: squareTocheck });
-          
+
           if (block.error && (block.checkingPieces[0].checkDirection != 'pawn' || squareTocheck[0] === checkPiece.coord)) return { checkmate: false };
           if (pawnBlock({ coord: squareTocheck[0], checkingPiece: checkPiece, color: enemyColor })) return { checkmate: false };
           
@@ -286,7 +286,7 @@ export function useMovePieces () {
         }
       }
 
-      return { checkmate: true };
+      return { checkmate: color.toUpperCase() };
     }
 
     return { checkmate: false };

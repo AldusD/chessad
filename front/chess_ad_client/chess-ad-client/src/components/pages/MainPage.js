@@ -5,7 +5,11 @@ export default function MainPage () {
     return (
         <PageStyle>
           <Menu />
-          <Chessboard />
+          <GameContainer>
+            <span>data-opponent</span>
+            <Chessboard />
+            <span>data-me</span>
+          </GameContainer>
         </PageStyle>
     )
 }
@@ -20,4 +24,9 @@ const Menu = styled.div`
   width: 36rem;
   margin-right: 4rem;
   background-color: grey;
+`;
+
+const GameContainer = styled.div`
+  display: flex;
+  flex-direction: column;
 `;
