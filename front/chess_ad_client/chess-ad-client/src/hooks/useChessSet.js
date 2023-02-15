@@ -13,6 +13,10 @@ export function useChessSet () {
     const toSetPieces = {};
     // move counter
     toSetPieces.move = 1;
+    toSetPieces.kingsCoord = {
+      white: ['85', [8, 5]],
+      black: ['15', [1, 5]]
+    };
 
     // pawns
     for(let i = 1; i <= 8; i++) {

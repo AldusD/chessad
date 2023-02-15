@@ -2,13 +2,16 @@ const PIECES_XP_BARRIER = { KNIGHT: 5, BISHOP: 5, ROOK: 7, QUEEN: 10 };
 
 export function useMovePieces () {
   const move = (moveInfo) => {
-    const moveDetails = validateMove({...moveInfo});
+    const moveDetails = validateMove({...moveInfo, pieces: {...moveInfo.pieces}});
     if (moveDetails.error) return { error: true };
-    if (moveDetails.abortUpdate) return { position: moveDetails.pieces };
+    if (moveDetails.abortUpdate) return { position: {...moveDetails.pieces} };
+    const inCheck = isInCheck({ color: moveDetails.color, pieces: updatePosition(moveDetails), kingSquare: updatePosition(moveDetails).kingsCoord[moveDetails.color] });
+    if (inCheck.error) return { error: true };
 
     changePositionStats(moveDetails);
     const position = updatePosition(moveDetails);
-    return { position };
+    const stats = isCheckmate({ pieces: position, color: moveDetails.color, });
+    return { position, checkmate: stats.checkmate };
   }
   
   const validatePawn = moveInfo => {
@@ -102,7 +105,7 @@ export function useMovePieces () {
     const crossRule = (xMove === 0 || yMove === 0);
     const diagonalRule = (xMove === yMove) || (xMove === -yMove);
     
-    if ((crossRule && rookObstacleRule() || diagonalRule && bishopObstacleRule(xMove, yMove))) return true;
+    if ((crossRule && rookObstacleRule()) || (diagonalRule && bishopObstacleRule(xMove, yMove))) return true;
     return { error: true };
   }
 
@@ -126,8 +129,11 @@ export function useMovePieces () {
         if (pieces[blockCoord]) return false;
       };
 
-      // verify safe path (TO BE IMPLEMENTED)
-
+      // verify safe path
+      for (let i = 0; i <= CastleType; i++) { 
+        const blockCoord = coordI[0] + (numCoordI[1] + i * step);
+        if (isInCheck({ color, pieces, kingSquare: [blockCoord, [Number(blockCoord[0]), Number(blockCoord[1])]] }).error) return false;
+      };
       return true;
     }
 
@@ -172,11 +178,313 @@ export function useMovePieces () {
     return visiblePieces; 
   }
 
+  const isCheckmate = moveInfo => {
+    const { pieces, color } = moveInfo;
+    const enemyColor = (color === 'white') ? 'black' : 'white';
+    const kingSquare = pieces.kingsCoord[enemyColor];
+    const checkingPieces = isInCheck({ pieces, color: enemyColor, kingSquare }).checkingPieces;
+    if (checkingPieces?.length > 0) {
+      // checking king move attempt  
+      for (let i = -1; i < 2; i++) {
+        for (let j = -1; j < 2; j++) {
+          if(j === 0 && i === 0) continue;
+          const coord = (kingSquare[1][0] + i).toString() + (kingSquare[1][1] + j);
+          if (Number(coord[0]) < 1 || Number(coord[0]) > 8 || Number(coord[1]) < 1 || Number(coord[1]) > 8) continue;
+          if (validateMove({ coordI: kingSquare[0], coordF: coord, pieces, usingSpell: false }).error) continue;
+          
+          const escape = !isInCheck({ pieces, color: enemyColor, kingSquare: [coord, [Number(coord[0]), Number(coord[1])]] }).error;
+          if (escape) return { checkmate: false };
+        }
+      }
+
+      // in double checks only attempt is to move the king
+      if (checkingPieces.length > 1) return { checkmate: color.toUpperCase() };
+
+      // checking piece blocking / capturing attempt
+      // { coordI, coordF, numCoordI, numCoordF, pieces, color }      
+      const pawnBlock = blockInfo => {
+        const { coord, checkingPiece, color } = blockInfo; 
+        const direction = (color === 'white') ? -1 : 1;
+        const foward = `${Number(coord[0]) - direction}${coord[1]}`;
+        const jump = `${Number(coord[0]) - 2 * direction}${coord[1]}`;
+        const passantLeft = `${Number(checkingPiece.coord[0])}${Number(checkingPiece.coord[1]) - 1}`;
+        const passantRight = `${Number(checkingPiece.coord[0])}${Number(checkingPiece.coord[1]) + 1}`;
+        const passantAttack = `${Number(checkingPiece.coord[0]) + direction}${checkingPiece.coord[1]}`;
+
+        const details1 = (pieces[foward]) ? validateMove({ coordI: foward, coordF: coord, pieces: {...pieces}, usingSpell: false }) : false;
+        const details2 = (pieces[jump]) ? validateMove({ coordI: jump, coordF: coord, pieces: {...pieces}, usingSpell: false }) : false;
+        const details3 = (pieces[passantLeft]) ? validateMove({ coordI: passantLeft, coordF: passantAttack, pieces: {...pieces}, usingSpell: false }) : false;
+        const details4 = (pieces[passantRight]) ? validateMove({ coordI: passantRight, coordF: passantAttack, pieces: {...pieces}, usingSpell: false }) : false;
+
+        const inCheck1 = (details1 && !details1.error) ? 
+          isInCheck({ color: details1.color, pieces: updatePosition(details1), kingSquare: updatePosition(details1).kingsCoord[details1.color] }) 
+          : 
+          { error: true };
+        
+        const inCheck2 = (details2 && !details2.error) ? 
+          isInCheck({ color: details2.color, pieces: updatePosition(details2), kingSquare: updatePosition(details2).kingsCoord[details2.color] }) 
+          : 
+          { error: true };
+
+        const inCheck3 = (details3 && !details3.error) ? 
+          isInCheck({ color: details3.color, pieces: updatePosition(details3), kingSquare: updatePosition(details3).kingsCoord[details3.color] }) 
+          : 
+          { error: true };
+        
+        const inCheck4 = (details4 && !details4.error) ? 
+          isInCheck({ color: details4.color, pieces: updatePosition(details4), kingSquare: updatePosition(details4).kingsCoord[details4.color] }) 
+          : 
+          { error: true };
+
+        if (!inCheck1.error) return true;
+        if (!inCheck2.error) return true;
+        if (pieces[checkingPiece.coord]?.name.includes('Pawn') && !inCheck3.error) return true;
+        if (pieces[checkingPiece.coord]?.name.includes('Pawn') && !inCheck4.error) return true;
+        
+        return false;
+      }
+      const checkPiece = checkingPieces[0];
+
+      if (checkPiece.checkDirection === 'pawn' || checkPiece.checkDirection === 'knight' || checkPiece.checkDirection === 'zombie') {
+        const { coord } = checkPiece;
+        const activePowerKnight = pieces[coord].active > pieces.move;  
+        const block = isInCheck({ pieces, color, kingSquare: [coord, [Number(coord[0]), Number(coord[1])]] }).error;
+          if (block && !activePowerKnight) return { checkmate: false };
+          if (!activePowerKnight && pawnBlock({ coord: coord, checkingPiece: checkPiece, color: enemyColor })) return { checkmate: false };  
+        }
+
+      if (checkPiece.checkDirection === 'cross') {
+        const axis = (kingSquare[1][0] - Number(checkPiece.coord[0]) === 0) ? 1 : 0;
+        const direction = (Number(checkPiece.coord[axis]) - kingSquare[1][axis] > 0) ? -1 : 1;
+        
+        const squareTocheck = [checkPiece.coord, [Number(checkPiece.coord[0]), Number(checkPiece.coord[1])]];
+        while (squareTocheck[0] != kingSquare[0]) {
+          const block = isInCheck({ pieces, color, kingSquare: squareTocheck });
+
+          if (block.error && (block.checkingPieces[0].checkDirection != 'pawn' || squareTocheck[0] === checkPiece.coord)) return { checkmate: false };
+          if (pawnBlock({ coord: squareTocheck[0], checkingPiece: checkPiece, color: enemyColor })) return { checkmate: false };
+          
+          squareTocheck[1][axis] = squareTocheck[1][axis] + direction;
+          squareTocheck[0] = `${squareTocheck[1][0]}${squareTocheck[1][1]}`;  
+        }
+      }
+
+      if (checkPiece.checkDirection === 'diagonal') {
+        const yDir = (kingSquare[1][0] - Number(checkPiece.coord[0]) > 0) ? 1 : -1;
+        const xDir = (kingSquare[1][1] - Number(checkPiece.coord[1]) > 0) ? 1 : -1;
+        
+        const squareTocheck = [checkPiece.coord, [Number(checkPiece.coord[0]), Number(checkPiece.coord[1])]];
+        while (squareTocheck[0] != kingSquare[0]) {
+          const block = isInCheck({ pieces, color, kingSquare: squareTocheck });
+
+          if (block.error && (block.checkingPieces[0].checkDirection != 'pawn' || squareTocheck[0] === checkPiece.coord)) return { checkmate: false };
+          if (pawnBlock({ coord: squareTocheck[0], checkingPiece: checkPiece, color: enemyColor })) return { checkmate: false };
+          
+          squareTocheck[1][0] = squareTocheck[1][0] + yDir;
+          squareTocheck[1][1] = squareTocheck[1][1] + xDir;
+          squareTocheck[0] = `${squareTocheck[1][0]}${squareTocheck[1][1]}`;  
+        }
+      }
+
+      return { checkmate: color.toUpperCase() };
+    }
+
+    return { checkmate: false };
+  }
+
+  const isInCheck = moveInfo => {
+    const { pieces, color, kingSquare } = moveInfo;
+    const enemyColor = (color === 'white') ? 'black' : 'white';
+    const checkingPieces = [];
+
+    const pawnCheck = () => {
+      const direction = (enemyColor === 'white') ? 1 : -1;
+      const leftPawn = (kingSquare[1][0] + direction).toString() + (kingSquare[1][1] - 1);
+      const rightPawn = (kingSquare[1][0] + direction).toString() + (kingSquare[1][1] + 1);
+      let check = false;
+
+      if (pieces[leftPawn] && pieces[leftPawn].color === enemyColor && pieces[leftPawn].name.includes('Pawn')) {
+        checkingPieces.push({ coord: leftPawn, checkDirection: 'pawn' });
+        check = true;
+      }
+      if (pieces[rightPawn] && pieces[rightPawn].color === enemyColor && pieces[rightPawn].name.includes('Pawn')) {
+        checkingPieces.push({ coord: rightPawn, checkDirection: 'pawn' });
+        check = true;
+      }
+
+      if (check) return false;
+      return true;
+    }
+
+    const zombieCheck = () => {
+      const direction = (enemyColor === 'white') ? 1 : -1;
+      const frontZombie = (kingSquare[1][0] + direction).toString() + (kingSquare[1][1]);
+      const leftZombie = (kingSquare[1][0] + direction).toString() + (kingSquare[1][1] - 1);
+      const rightZombie = (kingSquare[1][0] + direction).toString() + (kingSquare[1][1] + 1);
+      const noTrheatRule = zombie => (zombie && zombie.color === enemyColor && zombie.name.includes('Zombie') && zombie.active > pieces.move);
+      let check = false;
+      
+      if (noTrheatRule(pieces[frontZombie])) {
+        checkingPieces.push({ coord: frontZombie, checkDirection: 'zombie' });
+        check = true;
+      };
+      if (noTrheatRule(pieces[leftZombie])) {
+        checkingPieces.push({ coord: leftZombie, checkDirection: 'zombie' });
+        check = true;
+      };
+      if (noTrheatRule(pieces[rightZombie])) {
+        checkingPieces.push({ coord: rightZombie, checkDirection: 'zombie' });
+        check = true;
+      };
+
+      if (check) return false;
+      return true;
+    }
+
+    const knightCheck = () => {
+      const lookForKnight = (dirX, dirY) => {
+        const coord1 = ((kingSquare[1][0] + 2 * dirY).toString() + (kingSquare[1][1] + 1 * dirX));
+        const coord2 = ((kingSquare[1][0] + 1 * dirY).toString() + (kingSquare[1][1] + 2 * dirX));
+        const knight1 = (pieces[coord1] && pieces[coord1].name.includes('Knight') && pieces[coord1].color === enemyColor);
+        const knight2 = (pieces[coord2] && pieces[coord2].name.includes('Knight') && pieces[coord2].color === enemyColor);
+        let check = false;
+
+        if (knight1) {
+          checkingPieces.push({ coord: coord1, checkDirection: 'knight' });
+          check = true;
+        }
+        if (knight2) {
+          checkingPieces.push({ coord: coord2, checkDirection: 'knight' });
+          check = true;
+        }
+
+        if (check) return true;
+        return false;
+      }
+      let check = false;
+
+      // if in check also insert in the 
+      if (lookForKnight(-1, -1)) check = true;
+      if (lookForKnight(-1, 1)) check = true;
+      if (lookForKnight(1, -1)) check = true;
+      if (lookForKnight(1, 1)) check = true;
+      
+      if (check) return false;
+      return true;
+    }
+
+    const crossCheck = () => {
+      const isCrossPiece = name => (name.includes('Queen') || name.includes('Rook'));
+      let check = false;
+
+      // checking crosscheck in all four directions
+      let squareTocheck = kingSquare[0][0] + (kingSquare[1][1] - 1);
+      while (!pieces[squareTocheck] && squareTocheck[1] >= 1) {
+        squareTocheck = squareTocheck[0] + (Number(squareTocheck[1]) - 1);
+      }
+      let blocking = pieces[squareTocheck];
+      if (blocking && blocking.color === enemyColor && isCrossPiece(blocking.name)) {
+        checkingPieces.push({ coord: squareTocheck, checkDirection: 'cross' });
+        check = true;
+      } 
+      
+      squareTocheck = kingSquare[0][0] + (kingSquare[1][1] + 1);
+      while (!pieces[squareTocheck] && squareTocheck[1] <= 8) {
+        squareTocheck = squareTocheck[0] + (Number(squareTocheck[1]) + 1);
+      }
+      blocking = pieces[squareTocheck];
+      if (blocking && blocking.color === enemyColor && isCrossPiece(blocking.name)) {
+        checkingPieces.push({ coord: squareTocheck, checkDirection: 'cross' });
+        check = true;
+      }
+
+      squareTocheck = (kingSquare[1][0] - 1) + kingSquare[0][1];
+      while (!pieces[squareTocheck] && squareTocheck[1] <= 8) {
+        squareTocheck = Number(squareTocheck[0] - 1) + squareTocheck[1];
+      }
+      blocking = pieces[squareTocheck];
+      if (blocking && blocking.color === enemyColor && isCrossPiece(blocking.name)) {
+        checkingPieces.push({ coord: squareTocheck, checkDirection: 'cross' });
+        check = true;
+      }
+      
+      squareTocheck = (kingSquare[1][0] + 1) + kingSquare[0][1];
+      while (!pieces[squareTocheck] && squareTocheck[0] <= 8) {
+        squareTocheck = (Number(squareTocheck[0]) + 1) + squareTocheck[1];
+      }
+      blocking = pieces[squareTocheck];
+      if (blocking && blocking.color === enemyColor && isCrossPiece(blocking.name)) {
+        checkingPieces.push({ coord: squareTocheck, checkDirection: 'cross' });
+        check = true;
+      } 
+
+      if (check) return false;
+      return true;
+    }
+
+    const diagonalCheck = () => {
+      const isDiagonalPiece = name => (name.includes('Queen') || name.includes('Bishop'));  
+      let check = false;
+
+      // checking diagonalcheck in all four directions
+      let squareTocheck = (kingSquare[1][0] - 1).toString() + (kingSquare[1][1] - 1).toString();
+      while (!pieces[squareTocheck] && squareTocheck[0] >= 1 && squareTocheck[1] >= 1) {
+        squareTocheck = (Number(squareTocheck[0]) - 1).toString() + (Number(squareTocheck[1]) - 1).toString();
+      }
+      let blocking = pieces[squareTocheck];
+      if (blocking && blocking.color === enemyColor && isDiagonalPiece(blocking.name)) {
+        checkingPieces.push({ coord: squareTocheck, checkDirection: 'diagonal'});  
+        check = true;
+      } 
+
+      squareTocheck = (kingSquare[1][0] - 1).toString() + (kingSquare[1][1] + 1).toString();
+      while (!pieces[squareTocheck] && squareTocheck[0] >= 1 && squareTocheck[1] <= 8) {
+        squareTocheck = (Number(squareTocheck[0]) - 1).toString() + (Number(squareTocheck[1]) + 1).toString();
+      }
+      blocking = pieces[squareTocheck];
+      if (blocking && blocking.color === enemyColor && isDiagonalPiece(blocking.name)) {
+        checkingPieces.push({ coord: squareTocheck, checkDirection: 'diagonal'});  
+        check = true;
+      }
+
+      squareTocheck = (kingSquare[1][0] + 1).toString() + (kingSquare[1][1] - 1).toString();
+      while (!pieces[squareTocheck] && squareTocheck[0] <= 8 && squareTocheck[1] >= 1) {
+        squareTocheck = (Number(squareTocheck[0]) + 1).toString() + (Number(squareTocheck[1]) - 1).toString();
+      }
+      blocking = pieces[squareTocheck];
+      if (blocking && blocking.color === enemyColor && isDiagonalPiece(blocking.name)) {
+        checkingPieces.push({ coord: squareTocheck, checkDirection: 'diagonal'});  
+        check = true;
+      }
+
+      squareTocheck = (kingSquare[1][0] + 1).toString() + (kingSquare[1][1] + 1).toString();
+      while (!pieces[squareTocheck] && squareTocheck[0] <= 8 && squareTocheck[1] <= 8) {
+        squareTocheck = (Number(squareTocheck[0]) + 1).toString() + (Number(squareTocheck[1]) + 1).toString();
+      }
+      blocking = pieces[squareTocheck];
+      if (blocking && blocking.color === enemyColor && isDiagonalPiece(blocking.name)) {
+        checkingPieces.push({ coord: squareTocheck, checkDirection: 'diagonal'});  
+        check = true;
+      }      
+      
+      if (check) return false;
+      return true;
+    }
+
+    pawnCheck();
+    if (checkingPieces.length < 2) zombieCheck();
+    if (checkingPieces.length < 2) knightCheck();
+    if (checkingPieces.length < 2) crossCheck();
+    if (checkingPieces.length < 2) diagonalCheck();
+    if (checkingPieces.length != 0) return { error: true, checkingPieces };
+    return { error: false };
+  }
+
   const validateMove = (moveInfo) => {
     const { coordI, coordF, pieces, usingSpell } = moveInfo;
-    const details = { data: { coordI, coordF, pieces, specialMove: false } };
     const movingPiece = pieces[coordI];
     const color = movingPiece.color;
+    const details = { data: { coordI, coordF, pieces, color, specialMove: false } };
     const pieceType = (movingPiece.name[0] === 'p') ?  movingPiece.name.slice(2) : movingPiece.name.slice(1);
     const numCoordI = [Number(coordI[0]), Number(coordI[1])];
     const numCoordF = [Number(coordF[0]), Number(coordF[1])];
@@ -185,7 +493,7 @@ export function useMovePieces () {
       numCoordI, numCoordF, 
       pieces, color, 
       movingPiece, pieceType, 
-      movingPiece };
+      usingSpell };
 
     const rookObstacleRule = () => {
       let step;
@@ -221,8 +529,9 @@ export function useMovePieces () {
       return true;
     }
 
+    if ((pieces.move % 2 === 0 && color === 'white') || (pieces.move % 2 === 1 && color === 'black')) return { error: true };
     if (pieces[coordF]) {
-      const visiblePieces = killInvisiblePiece(moveInfo);
+      const visiblePieces = killInvisiblePiece(info);
       pieces[coordF] = visiblePieces[coordF];
     }
 
@@ -288,8 +597,8 @@ export function useMovePieces () {
       pieces[coordI].hasMoved = true;
       pieces[coordF].hasMoved = true;
 
-      const kingState = movePiece({ pieces, coordI, kingCoordF });
-      const kingAndRookState = movePiece({ kingState, coordF, rookCoordF });
+      const kingState = movePiece({ pieces, coordI, coordF: kingCoordF });
+      const kingAndRookState = movePiece({ pieces: kingState, coordI: coordF, coordF: rookCoordF });
       return { position: kingAndRookState };
     }
   }
@@ -351,8 +660,10 @@ export function useMovePieces () {
 
   const movePiece = (moveDetails) => {
     const { pieces, coordI, coordF } = moveDetails;
+    
     const currentState = {...pieces};
     const movingPiece = {...currentState[coordI]};
+    if (movingPiece.name.includes('King')) currentState.kingsCoord[movingPiece.color] = [coordF, [Number(coordF[0]), Number(coordF[1])]];
     currentState[coordI] = null;
     currentState[coordF] = movingPiece;
     return currentState

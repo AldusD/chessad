@@ -1,9 +1,11 @@
 import styled from "styled-components";
 import { useMovePieces } from "../../hooks/useMovePieces";
 import Piece from "./Piece";
+import { useGame } from "../../contexts/GameContext";
 
 export default function Square ({ coordinates, color, pieces, setPieces, selectedSquare, setSelectedSquare, usingSpell, setUsingSpell, refresh }) {
   const [move] = useMovePieces(); 
+  const { setGameStatus, STATUS } = useGame();
   
   const movePiece = () => {
     const moveInfo = move({ 
@@ -16,6 +18,10 @@ export default function Square ({ coordinates, color, pieces, setPieces, selecte
     
     setPieces(moveInfo.position);
     setUsingSpell(false);
+    if(moveInfo.checkmate) {
+      console.log('checkmate');
+      setGameStatus(STATUS[moveInfo.checkmate]);
+    }
     refresh.set(!refresh.value);
     return setSelectedSquare(null);
     }
