@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import styled from "styled-components";
+import { Bar } from './styles';
 
 export default function XpBar ({ name, xp, xpBarrier, refresh }) {
   const [filled, setFilled] = useState();
@@ -19,18 +19,3 @@ export default function XpBar ({ name, xp, xpBarrier, refresh }) {
     </>
   )
 }
-
-const Bar = styled.div`
-  height: 7vh;
-  width: 1vh;
-  background-color: green;
-  position: absolute;
-  right: 0.25rem;
-  
-  .filled {
-  content: '';
-  height: ${props => props.fill};
-  width: 1vh;
-  background-color: darkred;
-  }
-`;

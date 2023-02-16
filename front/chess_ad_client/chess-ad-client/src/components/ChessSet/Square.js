@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import { SquareStyle, SelectedFilter } from "./styles";
 import { useMovePieces } from "../../hooks/useMovePieces";
 import Piece from "./Piece";
 import { useGame } from "../../contexts/GameContext";
@@ -54,21 +54,3 @@ export default function Square ({ coordinates, color, pieces, setPieces, selecte
         </SquareStyle>
     )
 }
-
-const SquareStyle = styled.div`
-    background-color: ${props => props.color};
-    height: 10vh;
-    width: 10vh;
-    position: relative;
-
-    span {
-        font-size: 0.6rem;
-    }
-`;
-
-const SelectedFilter = styled.div`
-  position: absolute;
-  height: 10vh;
-  width: 10vh;
-  background-color: #fe670080;
-`;
