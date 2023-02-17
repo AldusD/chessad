@@ -22,7 +22,7 @@ export default function MainPage () {
           <Link to='/howtoplay' >New here? Learn how to play!</Link>
         </Menu>
         <GameContainer>
-          <Chessboard pointView={'white'} />
+          <Chessboard pointOfView={'white'} />
           <div className="data-container">
             <PlayerData profilePicture={Guest} username={'Guest'} color={'black'} showOptions={false} />
             <PlayerData profilePicture={Guest} username={'Guest'} color={'white'} showOptions={true} />

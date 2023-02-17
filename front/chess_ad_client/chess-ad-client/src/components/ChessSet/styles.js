@@ -89,3 +89,29 @@ export const Board = styled.div`
   color: white;
 }  
 `;
+
+export const PromotionContainer = styled.div`
+  position: absolute;
+  right: 1vh;
+  top: ${props => `${props.position}vh`};
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+  border-radius: 3vh;
+  height: 33vh;
+  width: 8vh;
+  background-color: #440044AA;
+  z-index: 1;
+
+  img {
+    height: 7vh;
+    width: 7vh;
+    padding: 0.5vh;
+    border-radius: 3vh;
+  
+    :hover {
+      background-color: #FFFFFFCC;
+    }
+  }
+`;

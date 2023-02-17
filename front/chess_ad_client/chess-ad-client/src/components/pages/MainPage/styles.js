@@ -3,6 +3,8 @@ import styled from "styled-components";
 export const PageStyle = styled.div`
   display: flex;
   align-items: center;
+  max-height: 100%;
+  max-width: 100%;
 `;
 
 export const Menu = styled.div`

@@ -4,17 +4,18 @@ import Square from './Square';
 import { useChessSet } from '../../hooks/useChessSet';
 import { useGame } from '../../contexts/GameContext';
 
-export default function Chessboard({ pointView }) {
+export default function Chessboard({ pointOfView }) {
   const [startCoordinates, startPieces] = useChessSet();
   const [pieces, setPieces] = useState(startPieces());
   const [squares, setSquares] = useState(startCoordinates());
   const [selectedSquare, setSelectedSquare] = useState(null);
+  const [promotion, setPromotion] = useState([false, '']);
   const [usingSpell, setUsingSpell] = useState(false);
   const [refresh, setRefresh] = useState(false);
   const { gameStatus, STATUS } = useGame();
 
   useEffect(() => {
-    if (pointView === 'black') setSquares([...squares.reverse()]);
+    if (pointOfView === 'black') setSquares([...squares.reverse()]);
   }, []);
 
   return (
@@ -30,7 +31,10 @@ export default function Chessboard({ pointView }) {
             selectedSquare={selectedSquare}
             usingSpell={usingSpell}
             setUsingSpell={setUsingSpell}
-            refresh={ {value: refresh, set: setRefresh }} />
+            promotion={promotion}
+            setPromotion={setPromotion}
+            refresh={ {value: refresh, set: setRefresh }} 
+            pointOfView={pointOfView} />
           )}
           {usingSpell ? 
             <button onClick={() => setUsingSpell(!usingSpell)} className={'on'} >Spell</button>

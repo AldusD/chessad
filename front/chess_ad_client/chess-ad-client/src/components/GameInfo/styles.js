@@ -65,6 +65,10 @@ export const ResignButton = styled(FiFlag)`
     font-size: 1.4rem;
     margin: 0 0.2rem;
     margin-left: 0.8rem;
+
+    :hover {
+      background-color: #F00;
+    }
 `;
 
 export const OfferDrawButton = styled(FaRegHandshake)`
@@ -73,4 +77,8 @@ export const OfferDrawButton = styled(FaRegHandshake)`
     border-radius: 1rem;
     font-size: 1.6rem;
     margin: 0 0.2rem;
+
+    :hover {
+      background-color: green;
+    }
 `;

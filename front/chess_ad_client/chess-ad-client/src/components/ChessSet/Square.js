@@ -1,25 +1,34 @@
+import { useState } from "react";
+
 import { SquareStyle, SelectedFilter } from "./styles";
 import { useMovePieces } from "../../hooks/useMovePieces";
 import Piece from "./Piece";
 import { useGame } from "../../contexts/GameContext";
+import PromotionModal from "./PromotionModal";
 
-export default function Square ({ coordinates, color, pieces, setPieces, selectedSquare, setSelectedSquare, usingSpell, setUsingSpell, refresh }) {
-  const [move] = useMovePieces(); 
+export default function Square (props) {
+  const { coordinates, color, pieces, setPieces, selectedSquare, setSelectedSquare, usingSpell, setUsingSpell, promotion, setPromotion, refresh, pointOfView } = props;
+  const [move] = useMovePieces();
   const { setGameStatus, STATUS } = useGame();
   
-  const movePiece = () => {
+  const movePiece = info => {
+    setPromotion([false, '']);
     const moveInfo = move({ 
-      coordI: selectedSquare, 
-      coordF: coordinates, 
-      pieces,
-      usingSpell
+      coordI: info.selectedSquare, 
+      coordF: info.coordinates, 
+      pieces: info.pieces,
+      usingSpell: info.usingSpell,
+      promote: info.promote
     });
-    if(moveInfo.error) return setSelectedSquare(coordinates);
+    if(moveInfo.error) {
+      setPromotion(false, '');
+      setSelectedSquare(coordinates);
+      return;
+    };
     
     setPieces(moveInfo.position);
     setUsingSpell(false);
     if(moveInfo.checkmate) {
-      console.log('checkmate');
       setGameStatus(STATUS[moveInfo.checkmate]);
     }
     refresh.set(!refresh.value);
@@ -31,14 +40,23 @@ export default function Square ({ coordinates, color, pieces, setPieces, selecte
     if(coordinates === selectedSquare) return setSelectedSquare(null);
       
     if (previousPiece) {
-      return movePiece();
-    }      
+      const promotionRank = coordinates[0] === ((previousPiece.color === 'white') ? '1' : '8');
+      const isPawn = previousPiece.name.includes('Pawn');
+      const yourTurn = (previousPiece.color === 'white') ? !(pieces.move % 2 === 0) : (pieces.move % 2 === 0); 
+      if (promotionRank && isPawn && yourTurn) {
+        setPromotion([coordinates, '']);
+        return;
+      }
+      return movePiece({ selectedSquare, coordinates, pieces, usingSpell, pointOfView });
+    }  
+
     setSelectedSquare(coordinates);
     }
     
     return (
         <SquareStyle 
-          onClick={() => selectSquare()} 
+          onClick={() => selectSquare()}
+          onBlur={() => setPromotion([false, ''])}
           isSelected={selectedSquare === coordinates}
           color={color} >
 
@@ -50,6 +68,19 @@ export default function Square ({ coordinates, color, pieces, setPieces, selecte
               refresh={refresh} />
             :
             <></>    
+          }
+          {(promotion[0] === coordinates) ? 
+            <PromotionModal 
+              color={(pieces.move % 2 === 0) ? 'black' : 'white'} 
+              setPromotion={setPromotion} 
+              movePiece={movePiece}
+              selectedSquare={selectedSquare}
+              coordinates={coordinates}
+              position={pieces} 
+              usingSpell={usingSpell} 
+              pointOfView={pointOfView} /> 
+            : 
+            <></>
           }
         </SquareStyle>
     )

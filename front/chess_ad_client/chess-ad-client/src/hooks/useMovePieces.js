@@ -15,7 +15,7 @@ export function useMovePieces () {
   }
   
   const validatePawn = moveInfo => {
-    const { coordI, coordF, numCoordI, numCoordF, pieces, color } = moveInfo;
+    const { coordI, coordF, numCoordI, numCoordF, pieces, color, promote } = moveInfo;
     const moveOneFowardRule = (numCoordI[0] === numCoordF[0] + 1) && color === 'white' || (numCoordI[0] === numCoordF[0] - 1) && color === 'black'; 
     const moveTwoFowardRule = (numCoordI[0] === numCoordF[0] + 2) && color === 'white' && numCoordI[0] === 7 ||  (numCoordI[0] === numCoordF[0] - 2) && color === 'black' && numCoordI[0] === 2;
     const captureRule = () => {
@@ -54,7 +54,7 @@ export function useMovePieces () {
 
     const passant = enPassantRule();
     if (captureRule() && passant.valid) {
-      if (promotionRule()) return { specialMove: { name: 'promotion', coordI, numCoordI, coordF, numCoordF, pieces } };
+      if (promotionRule()) return { specialMove: { name: 'promotion', coordI, numCoordI, coordF, numCoordF, pieces, info: { promote } } };
       if (passant.enPassant) return { specialMove: { name: 'enPassant', coordI, numCoordI, coordF, numCoordF, pieces, info: { capturedPawnCoord: passant.enPassant } } }; 
       if (moveOneFowardRule) return true;
       if (moveTwoFowardRule) return { specialMove: { name: 'pawnJump', coordI, numCoordI, coordF, numCoordF, pieces } }
@@ -481,10 +481,10 @@ export function useMovePieces () {
   }
 
   const validateMove = (moveInfo) => {
-    const { coordI, coordF, pieces, usingSpell } = moveInfo;
+    const { coordI, coordF, pieces, usingSpell, promote } = moveInfo;
     const movingPiece = pieces[coordI];
     const color = movingPiece.color;
-    const details = { data: { coordI, coordF, pieces, color, specialMove: false } };
+    const details = { data: { coordI, coordF, pieces, color, specialMove: false, promote } };
     const pieceType = (movingPiece.name[0] === 'p') ?  movingPiece.name.slice(2) : movingPiece.name.slice(1);
     const numCoordI = [Number(coordI[0]), Number(coordI[1])];
     const numCoordF = [Number(coordF[0]), Number(coordF[1])];
@@ -548,7 +548,7 @@ export function useMovePieces () {
 
     // pieces movement constraints
     if (pieceType === 'Broken') return { error: true };
-    if (pieceType === 'Pawn') details.data = { ...details.data , ...validatePawn({...info}) };
+    if (pieceType === 'Pawn') details.data = { ...details.data , ...validatePawn({...info, promote}) };
     if (pieceType === 'Knight') details.data = { ...details.data , ...validateKnight({...info}) };
     if (pieceType === 'Bishop') details.data = { ...details.data , ...validateBishop({ ...info, bishopObstacleRule }) };
     if (pieceType === 'Rook') details.data = { ...details.data , ...validateRook({ ...info, rookObstacleRule }) };
@@ -582,10 +582,11 @@ export function useMovePieces () {
     }
 
     if (name === 'promotion') {
-      // (TO BE IMPLEMENTED) promotion to pieces other than queen 
-      pieces[coordI].name = (coordF[0] === '1') ? 'wQueen' : 'bQueen';
+      // (TO BE IMPLEMENTED) promotion to pieces other than queen
+      const { promote } = specialMove.info;
+      pieces[coordI].name = promote;
       pieces[coordI].xp = 0;
-      pieces[coordI].xpBarrier = 10;
+      pieces[coordI].xpBarrier = PIECES_XP_BARRIER[promote.slice(1).toUpperCase()];
       return;
     }
 
