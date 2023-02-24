@@ -4,7 +4,6 @@ export const PageStyle = styled.div`
   display: flex;
   align-items: center;
   max-height: 100%;
-  max-width: 100%;
 `;
 
 export const Menu = styled.div`
@@ -14,13 +13,14 @@ export const Menu = styled.div`
 
   img {
     margin: 5vh 0;
-    height: 20vh;
+    width: 20vw;
   }
 `;
 
 export const GameContainer = styled.div`
   display: flex;
   width: 100%;
+  max-width: 73%;
   
   .data-container {
     height: 80vh;
