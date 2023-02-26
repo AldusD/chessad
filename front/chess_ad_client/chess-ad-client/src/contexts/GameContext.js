@@ -21,7 +21,7 @@ function GameProvider({ children }) {
 function useGame() {
   const context = useContext(GameContext);
   if (!context) {
-    throw new Error("game context não encontrado");
+    throw new Error("game context not found");
   }
   return context;
 }

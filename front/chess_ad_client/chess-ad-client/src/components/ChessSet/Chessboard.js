@@ -1,25 +1,24 @@
-import styled from 'styled-components';
 import { useEffect, useState } from 'react';
+import { Board } from './styles';
 import Square from './Square';
 import { useChessSet } from '../../hooks/useChessSet';
 import { useGame } from '../../contexts/GameContext';
 
-export default function Chessboard() {
+export default function Chessboard({ pointOfView }) {
   const [startCoordinates, startPieces] = useChessSet();
   const [pieces, setPieces] = useState(startPieces());
   const [squares, setSquares] = useState(startCoordinates());
   const [selectedSquare, setSelectedSquare] = useState(null);
+  const [promotion, setPromotion] = useState([false, '']);
   const [usingSpell, setUsingSpell] = useState(false);
   const [refresh, setRefresh] = useState(false);
   const { gameStatus, STATUS } = useGame();
 
+  useEffect(() => {
+    if (pointOfView === 'black') setSquares([...squares.reverse()]);
+  }, []);
+
   return (
-    <>
-      {(gameStatus === STATUS.ONGOING) ?
-        <></>
-        :
-        <span>{gameStatus}</span>
-      }
       <Board>
         {squares?.map((square, index) => 
           <Square 
@@ -32,7 +31,10 @@ export default function Chessboard() {
             selectedSquare={selectedSquare}
             usingSpell={usingSpell}
             setUsingSpell={setUsingSpell}
-            refresh={ {value: refresh, set: setRefresh }} />
+            promotion={promotion}
+            setPromotion={setPromotion}
+            refresh={ {value: refresh, set: setRefresh }} 
+            pointOfView={pointOfView} />
           )}
           {usingSpell ? 
             <button onClick={() => setUsingSpell(!usingSpell)} className={'on'} >Spell</button>
@@ -40,32 +42,4 @@ export default function Chessboard() {
             <button onClick={() => setUsingSpell(!usingSpell)} className={'off'} >Spell</button>
           }
       </Board>
-    </>
 )};
-
-const Board = styled.div`
-  height: 80vh;
-  width: 80vh;
-  display: grid;
-  grid-template-columns: repeat(8, 10vh);
-  grid-template-rows: repeat(8, 10vh);
-  background-color: blue;
-
-  button {
-    height: 4vh;
-    width: 6rem;
-    margin-top: 2vh;
-    border: none;
-    border-radius: 4px;  
-}
-
-.on {
-  background-color: green;
-  color: yellow;
-}
-
-.off {
-  background-color: red;
-  color: orange;
-}  
-`;
