@@ -13,7 +13,7 @@ export const FormStyles = Styled.form`
         border: none;
         margin: 0.4rem 0;
 
-        font-size: 1.3rem;
+        font-size: 1rem;
         font-family: 'Raleway'
         font-weight: 400;
         padding-left: 1.6rem;
@@ -23,7 +23,7 @@ export const FormStyles = Styled.form`
         display: flex;
         align-items: left;
         justify-content: center;
-        font-size: 0.9rem;
+        font-size: 1rem;
         font-family: 'Raleway'
         font-weight: 400;
         color: #555;

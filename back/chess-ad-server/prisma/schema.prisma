@@ -1,0 +1,31 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")  
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id String                 @id @default(auto()) @map("_id") @db.ObjectId
+  username String           @unique
+  email String              @unique
+  password String
+  profilePicture String?    
+  asWhiteGames Game[]       @relation("AsWhite")
+  aBlackGames Game[]        @relation("AsBlack")
+}
+
+model Game {
+  id String             @id @default(auto()) @map("_id") @db.ObjectId
+  whitePlayer User      @relation("AsWhite", fields: [whitePlayerId], references: [id])
+  whitePlayerId String  @db.ObjectId
+  blackPlayer User      @relation("AsBlack", fields: [blackPlayerId], references: [id])
+  blackPlayerId String  @db.ObjectId
+  result String 
+  pgn String
+}

@@ -9,6 +9,7 @@ export const Data = styled.div`
   width: 100%;
 
   > div {
+    max-width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -45,6 +46,7 @@ export const Data = styled.div`
   }
 
   .clock {
+    max-width: 100%;
     background-color: #88888880;
     height: 7vh;
     width: 5rem;
@@ -52,6 +54,7 @@ export const Data = styled.div`
     margin: 0 1rem;
     
     span {
+      max-width: 100%;
       color: white;
       font-size: 1.4rem;
     }
