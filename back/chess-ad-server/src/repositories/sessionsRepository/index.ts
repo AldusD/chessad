@@ -1,8 +1,12 @@
 import { prisma } from "../../config";
 import { Prisma } from "@prisma/client";
 
-async function createSession(sessionData: SessionData) {
+async function create(sessionData: SessionData) {
   const { userId, token } = sessionData
+
+  return prisma.session.create({
+    data: sessionData
+  })
 }
 
 type SessionData = {
@@ -14,14 +18,14 @@ async function deleteSession() {
     
 }
 
-async function findSession() {
+async function find() {
     
 }
 
 const sessionRepository = { 
-  createSession,
+  create,
   deleteSession, 
-  findSession 
+  find 
 };
 
 export default sessionRepository;

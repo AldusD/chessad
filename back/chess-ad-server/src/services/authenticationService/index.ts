@@ -1,9 +1,8 @@
-import jwt from "jsonwebtoken";
-import bcrypt from "bcrypt";
-
 import { User } from "@prisma/client";
 import sessionRepository from "../../repositories/sessionsRepository";
 import authenticationRepository from "../../repositories/authenticationRepository";
+import { createToken, compareToken, TokenTypes } from "./token";
+import { encryptPassword, validatePassword } from "./password";
 import { conflictError, invalidCredentialsError } from "./errors";
 
 export async function createUser({ username, email, password }: SignUpParams): Promise<User> {
@@ -12,7 +11,7 @@ export async function createUser({ username, email, password }: SignUpParams): P
   await validateUniqueEmail(email);
   await validateUniqueUsername(username);
 
-  const hashedPassword = await bcrypt.hash(password, 12);
+  const hashedPassword = await encryptPassword(password); 
 
   return authenticationRepository.create({
     username,
@@ -35,38 +34,33 @@ async function validateUniqueUsername(username: string) {
   }
 }
 
-async function signIn(params: SignInParams): Promise<string> {
+async function login(params: SignInParams): Promise<LoginResult> {
   const { email, password } = params;
 
-  const user = await getUserOrFail(email);
+  const user = await getUserByEmail(email);
+  await validatePassword(password, user.password);  
+  const tokens = await createSession(user.id);
 
-  await validatePasswordOrFail(password, user.password);
-
-  const token = await createSession(user.id);
-
-  return token;
+  return tokens;
 }
 
-async function getUserOrFail(email: string): Promise<GetUserOrFailResult> {
-  const user = await authenticationRepository.findByEmail(email, { id: true, email: true, password: true });
+async function getUserByEmail(email: string): Promise<GetUserByEmailResult> {
+  const user = await authenticationRepository.findByEmail(email);
   if (!user) throw invalidCredentialsError();
 
   return user;
 }
 
 async function createSession(userId: string) {
-  const token = jwt.sign({ userId }, process.env.JWT_SECRET);
-  await sessionRepository.createSession({
-    token,
+  const accessToken = createToken({ userId, type: TokenTypes.access });
+  const refreshToken = createToken({ userId, type: TokenTypes.refresh }, "2d");
+
+  await sessionRepository.create({
+    token: refreshToken,
     userId,
   });
 
-  return token;
-}
-
-async function validatePasswordOrFail(password: string, userPassword: string) {
-  const isPasswordValid = await bcrypt.compare(password, userPassword);
-  if (!isPasswordValid) throw invalidCredentialsError();
+  return { accessToken, refreshToken };
 }
 
 type SignInResult = {
@@ -74,10 +68,15 @@ type SignInResult = {
   token: string;
 };
 
-type GetUserOrFailResult = Pick<User, "id" | "email" | "password">;
+type LoginResult = {
+  accessToken: string,
+  refreshToken: string
+};
+
+type GetUserByEmailResult = Pick<User, "id" | "email" | "password">;
 
 const authenticationService = {
-  signIn,
+  login,
   createUser
 };
 

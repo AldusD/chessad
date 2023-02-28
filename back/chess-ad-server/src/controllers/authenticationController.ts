@@ -8,10 +8,13 @@ export async function singIn(req: Request, res: Response) {
   const { email, password } = req.body as SignInParams;
 
   try {
-    const result = await authenticationService.signIn({ email, password });
-
-    return res.status(httpStatus.OK).send(result);
+    const result = await authenticationService.login({ email, password });
+    
+    return res.status(httpStatus.OK).send({ token: result });
   } catch (error) {
+    if (error.name === "InvalidCredentialsError") {
+      return res.sendStatus(httpStatus.UNAUTHORIZED);  
+    }
     return res.sendStatus(httpStatus.UNPROCESSABLE_ENTITY);
   }
 }

@@ -61,7 +61,8 @@ describe("POST /auth/sign-in", () => {
         const response = await server.post("/auth/sign-in").send(body);
 
         expect(response.status).toBe(httpStatus.OK);
-        expect(response.body.token).toBeDefined();
+        expect(typeof(response.body.token.accessToken)).toBe("string");
+        expect(typeof(response.body.token.refreshToken)).toBe("string");
       });
     });
   });
