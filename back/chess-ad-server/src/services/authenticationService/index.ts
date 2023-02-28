@@ -2,8 +2,8 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
 import { User } from "@prisma/client";
-import sessionRepository from "@/repositories/sessionsRepository";
-import authenticationRepository from "@/repositories/authenticationRepository";
+import sessionRepository from "../../repositories/sessionsRepository";
+import authenticationRepository from "../../repositories/authenticationRepository";
 import { conflictError, invalidCredentialsError } from "./errors";
 
 export async function createUser({ username, email, password }: SignUpParams): Promise<User> {

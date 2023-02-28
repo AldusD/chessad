@@ -2,7 +2,7 @@ import httpStatus from "http-status";
 import { ObjectSchema } from "joi";
 import { Request, Response, NextFunction } from "express";
 
-import { invalidDataError } from "@/errors";
+import { invalidDataError } from "../errors";
 
 export function validateSchema(schema: ObjectSchema): ValidationMiddleware {
   return validate(schema);

@@ -21,10 +21,10 @@ export async function signUp(req: Request, res: Response) {
 
   try {
     const result = await authenticationService.createUser({ username, email, password });
-    return res.status(httpStatus.CREATED).send(result);
+    return res.sendStatus(httpStatus.CREATED);
   } catch (error) {
     if (error.name === "conflictError") {
-      return res.status(httpStatus.UNPROCESSABLE_ENTITY).send(error.message);  
+      return res.status(httpStatus.CONFLICT).send(error.message);  
     }
     return res.sendStatus(httpStatus.UNPROCESSABLE_ENTITY);
   }

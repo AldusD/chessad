@@ -10,6 +10,6 @@ export function conflictError(conflictField: string): ApplicationError {
 export function invalidCredentialsError(): ApplicationError {
   return {
     name: "InvalidCredentialsError",
-    message: "email or password are incorrect",
+    message: "email or password are incorrect"
   };
 }
