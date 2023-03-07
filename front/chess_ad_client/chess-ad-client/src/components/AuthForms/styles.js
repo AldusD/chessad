@@ -51,7 +51,7 @@ export const FormContainer = Styled.div`
     p {
         color: white;
         font-family: 'Raleway';
-        font-size: 1rem;
+        font-size: 1.2rem;
         text-align: center;
     }
 

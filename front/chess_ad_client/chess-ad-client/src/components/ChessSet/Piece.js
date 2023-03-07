@@ -4,7 +4,7 @@ import { usePiecesPictures } from "../../hooks/usePiecesPictures"
 import XpBar from "./XpBar";
 
 export default function Piece({ pieceInfo, move, refresh }) {
-  const { name, color, active } = pieceInfo;
+  const { name, color, active, xpBarrier, xp } = pieceInfo;
   const [pieces] = usePiecesPictures();
   const [isActive, setIsActive] = useState();
   const [shouldDisappear, setShouldDisappear] = useState();
@@ -27,9 +27,10 @@ export default function Piece({ pieceInfo, move, refresh }) {
         </PieceStyle>
         <XpBar 
           className={'bar'} 
-          name={pieceInfo.name} 
-          xp={pieceInfo.xp} 
-          xpBarrier={pieceInfo.xpBarrier}
+          name={name} 
+          xp={xp} 
+          xpBarrier={xpBarrier}
+          timeLeft={active - move}
           refresh={refresh} />
     </PieceContainer>
     }
