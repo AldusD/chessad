@@ -68,8 +68,5 @@ export function useChessSet () {
   return [
     startCoordinates,
     startPieces,
-    PIECES_XP_BARRIER,
-    PIECES,
-    COLORS
-  ]
+  ];
 } 

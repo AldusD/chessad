@@ -22,12 +22,13 @@ export default function Login({ setSelectedForm }) {
     const login = async click => {
         click.preventDefault();
         try {
-            const login = await axios.post(`${API}/login`, { email: form.email, password: form.password });
-            console.log(login.data)
+            const bestMove = 0;
+            // const login = await axios.post(`${API}/login`, { email: form.email, password: form.password });
+            // console.log(login.data)
             
-            localStorage.setItem("token", login.data.token);
-            localStorage.setItem("id", login.data.id);
-            localStorage.setItem("name", login.data.name);
+            // localStorage.setItem("token", login.data.token);
+            // localStorage.setItem("id", login.data.id);
+            // localStorage.setItem("name", login.data.name);
             
             navigate("/home");
         } catch (error) {

@@ -2,19 +2,25 @@ import { PIECES, PIECES_XP_BARRIER, COLORS, ACTIVE_TIME } from "../components/Ch
 
 export function useMovePieces () {
   const move = (moveInfo) => {
+    console.log('a')
     const { pieces } = moveInfo;
     const previousPosition = JSON.parse(JSON.stringify(pieces)); // isolate the previous position from the move attempt errors
     const moveDetails = validateMove({...moveInfo, pieces: {...previousPosition}});
 
     if (moveDetails.error) return { error: true };
-
-    const inCheck = isInCheck({ color: moveDetails.color, pieces: updatePosition(moveDetails), kingSquare: updatePosition(moveDetails).kingsCoord[moveDetails.color] });
-    if (inCheck.error) return { error: true };
-
     let position = moveDetails.pieces;
+
     if (!moveDetails.abortUpdate) {
+      console.log('n-ab-up')
+      const inCheck = isInCheck({ color: moveDetails.color, pieces: updatePosition(moveDetails), kingSquare: updatePosition(moveDetails).kingsCoord[moveDetails.color] });
+      if (inCheck.error) return { error: true };
+
       changePositionStats(moveDetails);
       position = updatePosition(moveDetails);
+    } else {
+        console.log('ab-up')
+        const inCheck = isInCheck({ color: moveDetails.color, pieces: moveDetails.pieces, kingSquare: moveDetails.pieces.kingsCoord[moveDetails.color] });
+        if (inCheck.error) return { error: true };
     }
     const finalPositionClone = JSON.parse(JSON.stringify(position)); // to check fading pieces discovered check
     killInvisiblePieces({ pieces: finalPositionClone });
@@ -130,7 +136,7 @@ export function useMovePieces () {
     const castleRule = () => {
       // capture on same color rule includes an exception to allow castle  
       const myRookRule = pieces[coordF] && pieces[coordF].color === color;
-      const notMovedRule = !movingPiece.hasMoved && !pieces[coordF].hasMoved;
+      const notMovedRule = !movingPiece.hasMoved && !pieces[coordF]?.hasMoved;
       if (!notMovedRule || !myRookRule) return false;
       
       const CastleType = Math.abs(numCoordF[1] - numCoordI[1]) - 1;
@@ -496,6 +502,7 @@ export function useMovePieces () {
     if (checkingPieces.length < 2) knightCheck();
     if (checkingPieces.length < 2) crossCheck();
     if (checkingPieces.length < 2) diagonalCheck();
+    console.log(checkingPieces)
     if (checkingPieces.length != 0) return { error: true, checkingPieces };
     return { error: false };
   }
@@ -646,6 +653,7 @@ export function useMovePieces () {
         active: (pieces.move - 1) + ACTIVE_TIME.ZOMBIE,
         xp: 0
       };
+      console.log("z-pieces:", pieces)
       return { abortUpdate: true, pieces };
     }
 
@@ -729,5 +737,7 @@ export function useMovePieces () {
     const currentState = movePiece({ pieces: {...pieces}, coordI, coordF });
     return currentState;
   }
-  return [move];
+  return [
+    move
+  ];
 }
