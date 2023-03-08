@@ -7,7 +7,6 @@ export function useMovePieces () {
     const moveDetails = validateMove({...moveInfo, pieces: {...previousPosition}});
 
     if (moveDetails.error) return { error: true };
-    // if (moveDetails.abortUpdate) return { position: {...moveDetails.pieces} };
 
     const inCheck = isInCheck({ color: moveDetails.color, pieces: updatePosition(moveDetails), kingSquare: updatePosition(moveDetails).kingsCoord[moveDetails.color] });
     if (inCheck.error) return { error: true };
@@ -127,11 +126,12 @@ export function useMovePieces () {
     const yMove = numCoordF[0] - numCoordI[0];
     const xMove = numCoordF[1] - numCoordI[1];
     const kingBoundaryRule = (Math.abs(xMove) <= 1 && Math.abs(yMove) <= 1);
+    const tryingCastle = (pieces[coordF] && pieces[coordF].color === color);
     const castleRule = () => {
       // capture on same color rule includes an exception to allow castle  
-      const myRookRule = pieces[coordF] && pieces[coordF].color === color; 
-      const notMovedRule = myRookRule && !(movingPiece.hasMoved || pieces[coordF].hasMoved);
-      if (!notMovedRule) return false;
+      const myRookRule = pieces[coordF] && pieces[coordF].color === color;
+      const notMovedRule = !movingPiece.hasMoved && !pieces[coordF].hasMoved;
+      if (!notMovedRule || !myRookRule) return false;
       
       const CastleType = Math.abs(numCoordF[1] - numCoordI[1]) - 1;
       const step = Math.abs(numCoordF[1] - numCoordI[1]) /  (numCoordF[1] - numCoordI[1]);
@@ -157,7 +157,7 @@ export function useMovePieces () {
           } 
         } 
       };
-    if (kingBoundaryRule) return true;
+    if (kingBoundaryRule && !tryingCastle) return true;
     return { error: true };
   }
 
@@ -556,7 +556,7 @@ export function useMovePieces () {
     // cannot capture same color piece + exceptions
     if (pieces[coordF] && pieces[coordF].color === color) {
       const destinationType = pieces[coordF].name.slice(1);
-      const castleException = (pieceType === 'King' && destinationType === PIECES.ROOK);
+      const castleException = (pieceType === PIECES.KING && destinationType === PIECES.ROOK);
       if (!castleException) return { error: true };
     }
 

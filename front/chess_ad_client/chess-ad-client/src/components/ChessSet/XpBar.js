@@ -14,23 +14,20 @@ export default function XpBar (props) {
     setXpFilled(`${7 - ((xp / xpBarrier * 7))}vh`);
     
     if (fadingType || activePowerKnight) {
-      console.log(type)
       const fadingTime = (ACTIVE_TIME[type.toUpperCase()] - 1);
-      console.log(timeLeft)
       setFadeFilled(`${7 - ((timeLeft / fadingTime * 7))}vh`);
-      console.log(fadingTime)
     }
   }, [refresh])   
   
   return (
     <>
       {(!invalidType && !fadingType) ?  
-        <Bar fill={xpFilled} color="green" bgColor="darkred" ><div className="filled" ></div></Bar>
+        <Bar fill={xpFilled} color="#0B0" bgColor="darkred" ><div className="filled" ></div></Bar>
         :
         <></>
       }
       {(fadingType || activePowerKnight) ? 
-        <Bar fill={fadeFilled} color="blue" bgColor="darkblue" ><div className="filled" ></div></Bar>
+        <Bar fill={fadeFilled} color="#0AF" bgColor="darkblue" ><div className="filled" ></div></Bar>
         :
         <></>
       }
