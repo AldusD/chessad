@@ -21,14 +21,19 @@ export async function singIn(req: Request, res: Response) {
 
 export async function signUp(req: Request, res: Response) {
   const { username, email, password } = req.body as SignUpParams;
-
   try {
     const result = await authenticationService.createUser({ username, email, password });
     return res.sendStatus(httpStatus.CREATED);
   } catch (error) {
+    console.log(error)
     if (error.name === "conflictError") {
       return res.status(httpStatus.CONFLICT).send(error.message);  
     }
+
+    if (error.name === "ServerError") {
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).send(error.message);
+    }
+    
     return res.sendStatus(httpStatus.UNPROCESSABLE_ENTITY);
   }
 

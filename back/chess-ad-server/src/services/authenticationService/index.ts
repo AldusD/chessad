@@ -3,21 +3,23 @@ import sessionRepository from "../../repositories/sessionsRepository";
 import authenticationRepository from "../../repositories/authenticationRepository";
 import { createToken, compareToken, TokenTypes } from "./token";
 import { encryptPassword, validatePassword } from "./password";
-import { conflictError, invalidCredentialsError } from "./errors";
+import { conflictError, invalidCredentialsError, serverError } from "./errors";
 
 export async function createUser({ username, email, password }: SignUpParams): Promise<User> {
-  
-  
   await validateUniqueEmail(email);
   await validateUniqueUsername(username);
 
   const hashedPassword = await encryptPassword(password); 
-
-  return authenticationRepository.create({
+  
+  const user = await authenticationRepository.create({
     username,
     email,
     password: hashedPassword,
   });
+
+  console.log(user);
+  if(!user) throw serverError();
+  return user;
 }
 
 async function validateUniqueEmail(email: string) {

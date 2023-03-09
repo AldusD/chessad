@@ -1,25 +1,30 @@
 import { useState, useContext } from "react";
 import { useNavigate } from 'react-router-dom';
-import axios from "axios";
+import { useQuery } from 'react-query';
 
 import { FormContainer, Header, Space } from "./styles";
 import Form from "./Form";
 import { useUser } from "../../contexts/UserContext";
+import { useSignin } from "../../hooks/api/useAuthentication";
 
 export default function Login({ setSelectedForm }) {
-    // State Variables
     const [form, setForm] = useState({
         email: '',
         password: '',
     });
-
-    // Logic
+    
     const { API } = useUser();
     const navigate = useNavigate()
-
     const updateForm = e => setForm({ ...form, [e.target.name]: e.target.value});
 
-    const login = async click => {
+    const { mutate: signinForm } = useSignin();
+    const login = click => {
+      click.preventDefault();
+      const { username, email, password } = form;
+      const response = signinForm({ username, email, password });
+    }
+
+    const login2 = async click => {
         click.preventDefault();
         try {
             const bestMove = 0;
@@ -37,7 +42,6 @@ export default function Login({ setSelectedForm }) {
         }
     }
     
-    // UI
     return (
         <FormContainer>
         <Space size={10} />
