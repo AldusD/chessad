@@ -1,8 +1,8 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from 'react-query';
 
-import { FormContainer, Header, Space } from "./styles";
+import { FormContainer, Header, Space, FieldError } from "./styles";
 import Form from "./Form";
 import { useUser } from "../../contexts/UserContext";
 import { useSignin } from "../../hooks/api/useAuthentication";
@@ -12,43 +12,79 @@ export default function Login({ setSelectedForm }) {
         email: '',
         password: '',
     });
-    
-    const { API } = useUser();
+    const [formErrors, setFormErrors] = useState({ 
+        username: '', 
+        email: '', 
+        password: '', 
+        confirmation: '', 
+        error: false 
+    });
     const navigate = useNavigate()
     const updateForm = e => setForm({ ...form, [e.target.name]: e.target.value});
+    const { 
+        mutate: signinForm, 
+        data: signinData
+    } = useSignin();
 
-    const { mutate: signinForm } = useSignin();
-    const login = click => {
+    useEffect(() => {
+      if (signinData && signinData[0] === '{') navigate('/home'); 
+    }, [signinData])
+
+    const login = async() => {
+        try {
+          const { username, email, password } = form;
+          const a = await signinForm({ email, password });
+          if (a) {
+            console.log('a', a)
+          }
+        } catch(error) {
+          console.log('err', error);
+        }
+      }
+    
+    const signin = (click) => {
       click.preventDefault();
-      const { username, email, password } = form;
-      const response = signinForm({ username, email, password });
+      const hasError = getErrors();
+      if (!hasError) {
+        return login();
+      }
+      return;
     }
 
-    const login2 = async click => {
-        click.preventDefault();
-        try {
-            const bestMove = 0;
-            // const login = await axios.post(`${API}/login`, { email: form.email, password: form.password });
-            // console.log(login.data)
-            
-            // localStorage.setItem("token", login.data.token);
-            // localStorage.setItem("id", login.data.id);
-            // localStorage.setItem("name", login.data.name);
-            
-            navigate("/home");
-        } catch (error) {
-            alert(error.message)
-            console.error(error);
-        }
+    const getErrors = () => {
+        const errors = { email: '', password: '' };
+    
+        const emailPattern = RegExp( /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/);
+        if (!emailPattern.test(form.email)) errors.email = 'email must be a valid email';
+        if (form.email.length === 0) errors.email = 'email is required';
+        if (form.password.length === 0) errors.password = 'password is required';
+
+        setFormErrors(errors);
+        if (errors.email || errors.password) return true;
+        return false; 
     }
     
     return (
         <FormContainer>
         <Space size={10} />
         <Form>
+          {signinData ? 
+            <FieldError width={'80%'} >
+              {(signinData === 'Unauthorized') ? 
+              "email and password don't match" 
+              : 
+              "1. e4!"
+              } 
+            </FieldError> : <></>}
+          <div>
             <input name="email" type="email" placeholder="Email" onChange={ e => updateForm(e) } value={form.email}></input> 
-            <input name="password" type="password" placeholder="Password" onChange={ e => updateForm(e) } value={form.password}></input> 
-            <button onClick={ e => login(e) }>Login</button>
+            { formErrors.email ? <FieldError width={'80%'}>{formErrors.email}</FieldError> : <></> }
+          </div>
+          <div>
+            <input name="password" type="password" placeholder="Password" onChange={ e => updateForm(e) } value={form.password}></input>
+            { formErrors.password ? <FieldError width={'80%'}>{formErrors.password}</FieldError> : <></> }
+          </div>
+          <button onClick={ e => signin(e) }>Login</button>
         </Form>
         <p onClick={() => setSelectedForm('singup')} >Create account</p> 
         

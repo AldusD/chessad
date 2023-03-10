@@ -5,7 +5,6 @@ import { FormContainer, Header, Space, FieldError } from "./styles";
 import Form from "./Form";
 import { useUser } from "../../contexts/UserContext";
 import { useSignup } from "../../hooks/api/useAuthentication";
-import { isError } from "react-query";
 
 export default function SignupPage({ setSelectedForm }) {
   const [form, setForm] = useState({
@@ -22,11 +21,9 @@ export default function SignupPage({ setSelectedForm }) {
     error: false 
    });
   const updateForm = e => setForm({ ...form, [e.target.name]: e.target.value});
-  const updateFormErrors = (field, value) => setFormErrors({ ...formErrors, [value]: value});
   const { 
     mutate: signupForm, 
-    data: signupData, 
-    isError: signupError 
+    data: signupData
   } = useSignup();
 
   const validateForm = () => {
@@ -40,7 +37,6 @@ export default function SignupPage({ setSelectedForm }) {
     if (form.password.length === 0) setFormErrors({...formErrors, password: 'password is required'});
     if (form.confirmation.length === 0) setFormErrors({...formErrors, confirmation: 'password confirmation is required'});
     if (form.confirmation != form.password) setFormErrors({...formErrors, confirmation: 'passwords must be the same'});
-    console.log('err', formErrors)
     if (formErrors.username || formErrors.email || formErrors.password || formErrors.confirmation) {
       setFormErrors({...formErrors, error: true })
     } else setFormErrors({ username: '', email: '', password: '', confirmation: '', error: false });
@@ -67,20 +63,16 @@ export default function SignupPage({ setSelectedForm }) {
 
   const register = async() => {
     try {
-      console.log('reg')
       const { username, email, password } = form;
       await signupForm({ username, email, password });
-      if (signupData) console.log('data', signupData);
-      if (signupError) console.log('fake-err');
     } catch(error) {
       console.log('err', error);
     }
   }
 
-  const signup = async (click) => {
+  const signup = (click) => {
     click.preventDefault();
     const hasError = getErrors();
-    console.log('he-s', hasError)
     if (!hasError) {
       return register();
     }
