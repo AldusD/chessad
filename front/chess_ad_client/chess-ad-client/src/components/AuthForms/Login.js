@@ -34,9 +34,6 @@ export default function Login({ setSelectedForm }) {
         try {
           const { username, email, password } = form;
           const a = await signinForm({ email, password });
-          if (a) {
-            console.log('a', a)
-          }
         } catch(error) {
           console.log('err', error);
         }
