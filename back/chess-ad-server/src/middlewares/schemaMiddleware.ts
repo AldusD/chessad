@@ -13,9 +13,10 @@ function validate(schema: ObjectSchema): ValidationMiddleware {
     const { error } = schema.validate(req.body);
   
     if (!error) {
-      next();
+      return next();
     } else {
-      res.status(httpStatus.UNPROCESSABLE_ENTITY).send(invalidDataError(error.details.map((d) => d.message)));
+      console.log(error);
+      return res.status(httpStatus.UNPROCESSABLE_ENTITY).send(invalidDataError(error.details.map((d) => d.message)));
     }
   };
 }
