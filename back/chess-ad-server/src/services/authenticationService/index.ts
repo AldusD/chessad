@@ -1,7 +1,7 @@
 import { User } from "@prisma/client";
 import sessionRepository from "../../repositories/sessionsRepository";
 import authenticationRepository from "../../repositories/authenticationRepository";
-import { createToken, compareToken, TokenTypes } from "./token";
+import { createToken, TokenTypes } from "../../utils/token";
 import { encryptPassword, validatePassword } from "./password";
 import { conflictError, invalidCredentialsError, serverError } from "./errors";
 
@@ -43,7 +43,7 @@ async function login(params: SignInParams): Promise<LoginResult> {
   await validatePassword(password, user.password);  
   const tokens = await createSession(user.id);
 
-  return tokens;
+  return { token: tokens, user: { username: user.username, email: user.email, profilePicture: user.profilePicture } };
 }
 
 async function getUserByEmail(email: string): Promise<GetUserByEmailResult> {
@@ -70,12 +70,23 @@ type SignInResult = {
   token: string;
 };
 
-type LoginResult = {
+type Tokens = {
   accessToken: string,
   refreshToken: string
+}
+
+type UserResponse = {
+  username: string,
+  email: string,
+  profilePicture: string
+}
+
+type LoginResult = {
+  token: Tokens,
+  user: UserResponse
 };
 
-type GetUserByEmailResult = Pick<User, "id" | "email" | "password">;
+type GetUserByEmailResult = Pick<User, "id" | "username" | "email" | "password" | "profilePicture" >;
 
 const authenticationService = {
   login,

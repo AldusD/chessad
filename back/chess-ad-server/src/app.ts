@@ -4,7 +4,7 @@ import express, { Express } from "express";
 import cors from "cors";
 
 import { loadEnv, connectDb, disconnectDB, prisma } from "./config";
-import { authenticationRouter } from "./routers";
+import { authenticationRouter, gameSettingRouter } from "./routers";
 
 loadEnv();
 
@@ -13,7 +13,8 @@ app
   .use(cors())
   .use(express.json())
   .get("/health", (_req, res) => res.send("1.e4!"))
-  .use("/auth", authenticationRouter);
+  .use("/auth", authenticationRouter)
+  .use("/games-setting/", gameSettingRouter);
 
 export function init(): Promise<Express> {
   connectDb();
