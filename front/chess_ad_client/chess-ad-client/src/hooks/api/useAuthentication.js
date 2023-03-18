@@ -19,7 +19,8 @@ const register = async (userData) => {
 
 export function useSignin () {
   const navigateToHome = (data, navigate) => {
-    if (data === 'Unauthorized') return;
+    console.log(data)
+    if (data[0] === '{') return;
     const tokens = JSON.parse(data).token;
     localStorage.setItem("accessToken", tokens.accessToken);
     localStorage.setItem("refreshToken", tokens.refreshToken);

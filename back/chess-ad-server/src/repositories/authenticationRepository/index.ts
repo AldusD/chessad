@@ -1,6 +1,5 @@
 import { prisma } from "../../config";
 import { Prisma } from "@prisma/client";
-import { serverError } from "@/services";
 
 async function findByEmail(email: string, select?: Prisma.UserSelect) {
   const params: Prisma.UserFindUniqueArgs = {
@@ -16,7 +15,7 @@ async function findByEmail(email: string, select?: Prisma.UserSelect) {
     const conflict = await prisma.user.findUnique(params);
     return conflict; 
   } catch (error) {
-    throw serverError();
+    console.log(error);
   }
 }
 

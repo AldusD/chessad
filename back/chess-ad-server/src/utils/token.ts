@@ -1,5 +1,4 @@
 import jwt from "jsonwebtoken";
-import { VerifyOptions } from "jsonwebtoken";
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -18,5 +17,5 @@ function createToken(payload: TokenData, expiration?: string | number) {
   const expiresIn = expiration || '1h'; 
   return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn });
 }
-const compareToken = (token: string, callback: VerifyOptions) => jwt.verify(token, process.env.TOKEN_SECRET, callback);
-export { createToken, compareToken, TokenTypes };
+const getTokenDataOrFail = (token: string) => jwt.verify(token, process.env.TOKEN_SECRET);
+export { createToken, getTokenDataOrFail, TokenTypes };

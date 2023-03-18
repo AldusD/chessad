@@ -11,29 +11,46 @@ generator client {
 }
 
 model User {
-  id String                 @id @default(auto()) @map("_id") @db.ObjectId
-  username String           @unique
-  email String              @unique
-  password String
-  profilePicture String?    
-  asWhiteGames Game[]       @relation("AsWhite")
-  aBlackGames Game[]        @relation("AsBlack")
-  sessions Session[]
-}
-
-model Game {
-  id String             @id @default(auto()) @map("_id") @db.ObjectId
-  whitePlayer User      @relation("AsWhite", fields: [whitePlayerId], references: [id])
-  whitePlayerId String  @db.ObjectId
-  blackPlayer User      @relation("AsBlack", fields: [blackPlayerId], references: [id])
-  blackPlayerId String  @db.ObjectId
-  result String 
-  pgn String
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  username        String    @unique
+  email           String    @unique
+  password        String
+  profilePicture  String?    
+  createdAt       DateTime  @default(now())
+  asWhiteGames    Game[]    @relation("AsWhite")
+  asBlackGames    Game[]    @relation("AsBlack")
+  sessions        Session[]
+  createdGames    GameSetting[]
 }
 
 model Session {
-  id String       @id @default(auto()) @map("_id") @db.ObjectId
-  token String
-  user User       @relation(fields: [userId], references: [id])
-  userId String   @db.ObjectId
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  token      String
+  createdAt  DateTime  @default(now())
+  user       User      @relation(fields: [userId], references: [id])
+  userId     String    @db.ObjectId
+}
+
+model GameSetting {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  time       Int  
+  increment  Int
+  side       String
+  path       String    @unique  
+  createdAt  DateTime  @default(now())    
+  user       User      @relation(fields: [userId], references: [id])
+  userId     String    @db.ObjectId
+}
+
+model Game {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  result        String 
+  pgn           String
+  path          String    @unique
+  isOpen        Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  whitePlayer   User      @relation("AsWhite", fields: [whitePlayerId], references: [id])
+  whitePlayerId String    @db.ObjectId
+  blackPlayer   User      @relation("AsBlack", fields: [blackPlayerId], references: [id])
+  blackPlayerId String    @db.ObjectId
 }

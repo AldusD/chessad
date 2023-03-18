@@ -2,8 +2,9 @@ import { useState, useContext, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from 'react-query';
 
-import { FormContainer, Header, Space, FieldError } from "./styles";
-import Form from "./Form";
+import { FormContainer, Header, Space } from "./styles";
+import { FieldError } from '../comons/styles';
+import Form from "../comons/Form";
 import { useUser } from "../../contexts/UserContext";
 import { useSignin } from "../../hooks/api/useAuthentication";
 
@@ -64,13 +65,16 @@ export default function Login({ setSelectedForm }) {
     return (
         <FormContainer>
         <Space size={10} />
-        <Form>
+        <Form direction={'column'} inputSize='70%' >
           {signinData ? 
             <FieldError width={'80%'} >
               {(signinData === 'Unauthorized') ? 
-              "email and password don't match" 
-              : 
-              "1. e4!"
+                "email and password don't match" 
+                : 
+                (signinData === 'Unprocessable Entity') ? 
+                  'server error, please try again later' 
+                  : 
+                  "1. e4!"
               } 
             </FieldError> : <></>}
           <div>

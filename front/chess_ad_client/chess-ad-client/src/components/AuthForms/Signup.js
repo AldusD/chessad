@@ -1,8 +1,9 @@
 import { useState, useContext, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 
-import { FormContainer, Header, Space, FieldError } from "./styles";
-import Form from "./Form";
+import { FormContainer, Header, Space } from "./styles";
+import { FieldError } from '../comons/styles';
+import Form from "../comons/Form";
 import { useUser } from "../../contexts/UserContext";
 import { useSignup } from "../../hooks/api/useAuthentication";
 
@@ -82,7 +83,7 @@ export default function SignupPage({ setSelectedForm }) {
   return (
       <FormContainer>
       <Space size={5} />
-      <Form>
+      <Form direction='column' inputSize='70%' >
         {signupData ? <FieldError width={'80%'} >{signupData} </FieldError> : <></>}
         <div>
           <input name="username" type='text' placeholder="Username" onChange={e => updateForm(e) } value={form.name}></input>

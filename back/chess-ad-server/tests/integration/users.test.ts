@@ -5,6 +5,7 @@ import httpStatus from "http-status";
 import app, { init } from "../../src/app";
 import { cleanDb } from "../helpers";
 import { createUser } from "../factories";
+import { prisma } from "../../src/config";
 
 beforeAll(async () => {
   await init();
@@ -56,13 +57,28 @@ describe("POST /auth/sign-in", () => {
     describe("when credentials are valid", () => {
       it("should respond with status 200", async () => {
         const body = generateValidBody();
-        await createUser(body);
+        const user = await createUser(body);
 
         const response = await server.post("/auth/sign-in").send(body);
+        const checkUser = await prisma.user.findUnique({
+          where: {
+            username: user.username
+          }
+        });
+        const session = await prisma.session.findFirst({
+          where: {
+            userId: user.id
+          }
+        });
 
-        expect(response.status).toBe(httpStatus.OK);
         expect(typeof(response.body.token.accessToken)).toBe("string");
-        expect(typeof(response.body.token.refreshToken)).toBe("string");
+        expect(response.status).toBe(httpStatus.OK);
+        expect(response.body.token.refreshToken).toBe(session.token);
+        expect(response.body.user).toEqual({
+          username: checkUser.username,
+          email: checkUser.email,
+          profilePicture: checkUser.profilePicture
+        })
       });
     });
   });
@@ -139,7 +155,13 @@ describe("POST /auth/sign-up", () => {
       const body = generateValidBody();
 
       const response = await server.post("/auth/sign-up").send(body);
+      const user = await prisma.user.findUnique({
+        where: {
+          username: body.username
+        }
+      });
 
+      expect(user.username).toBe(body.username);
       expect(response.status).toBe(httpStatus.CREATED);
     });
   });

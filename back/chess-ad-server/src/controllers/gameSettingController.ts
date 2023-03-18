@@ -1,10 +1,9 @@
-import axios from "axios";
 import { Request, Response } from "express";
 import httpStatus from "http-status";
 
 import authenticationService, { SignInParams, SignUpParams } from "../services/authenticationService";
 
-export async function createGame(req: Request, res: Response) {
+export async function singIn(req: Request, res: Response) {
   const { email, password } = req.body as SignInParams;
 
   try {
@@ -19,7 +18,7 @@ export async function createGame(req: Request, res: Response) {
   }
 }
 
-export async function signUp(req: Request, res: Response) {
+export async function postGameSetting(req: Request, res: Response) {
   const { username, email, password } = req.body as SignUpParams;
   try {
     const result = await authenticationService.createUser({ username, email: email.toLowerCase(), password });
