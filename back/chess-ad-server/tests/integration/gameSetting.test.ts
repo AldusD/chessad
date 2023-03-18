@@ -4,9 +4,9 @@ import httpStatus from "http-status";
 
 import app, { init } from "../../src/app";
 import { cleanDb } from "../helpers";
-import { createUser, createSession, CreateGameSetting } from "../factories";
+import { createUser, createSession, createGameSetting } from "../factories";
 import { prisma } from "../../src/config";
-import { createToken, TokenTypes } from "@/utils/token";
+import { createToken, TokenTypes } from "../../src/utils/token";
 
 beforeAll(async () => {
   await init();
@@ -25,11 +25,11 @@ describe("GET /game-setting", () => {
 
   it("should respond with status 200 and the correspondent data", async () => {
       const user = await createUser();
-      const gameSetting = CreateGameSetting({ userId: user.id });
+      const gameSetting = await createGameSetting({ userId: user.id });
       const response = await server.get("/game-setting");
   
       expect(response.status).toBe(httpStatus.OK);
-      expect(response.body.games[0]).toEqual(gameSetting);
+      expect(response.body.games).toEqual([{ ...gameSetting, createdAt: gameSetting.createdAt.toISOString() }]);
   }); 
 });
 
@@ -81,15 +81,13 @@ describe("POST /game-setting", () => {
         return {
           time: Math.floor(Math.random() * 10),
           increment: Math.floor(Math.random() * 10),
-          side: sides[Math.floor(Math.random() * 3)],
-          userId: ''
+          side: sides[Math.floor(Math.random() * 3)]
         }
       };
   
       it("should respond with status 201", async () => {
         const user = await createUser();
         const body = generateValidBody();
-        body.userId = user.id;
         const accessToken = createToken({ userId: user.id, type: TokenTypes.access });  
         const response = await server.post("/game-setting")
           .set("Authorization", `Bearer ${accessToken}`)

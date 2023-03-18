@@ -1,38 +1,26 @@
 import { Request, Response } from "express";
 import httpStatus from "http-status";
 
-import authenticationService, { SignInParams, SignUpParams } from "../services/authenticationService";
+import gameSettingService from "../services/gameSettingService";
 
-export async function singIn(req: Request, res: Response) {
-  const { email, password } = req.body as SignInParams;
-
+export async function getGameSettings(req: Request, res: Response) {
   try {
-    const result = await authenticationService.login({ email: email.toLowerCase(), password });
+    const result = await gameSettingService.listGameSettings();
     
-    return res.status(httpStatus.OK).send({ token: result.token, user: result.user });
+    return res.status(httpStatus.OK).send({ games: result });
   } catch (error) {
-    if (error.name === "InvalidCredentialsError") {
-      return res.sendStatus(httpStatus.UNAUTHORIZED);  
-    }
-    return res.sendStatus(httpStatus.UNPROCESSABLE_ENTITY);
+    return res.sendStatus(httpStatus.BAD_REQUEST);
   }
 }
 
 export async function postGameSetting(req: Request, res: Response) {
-  const { username, email, password } = req.body as SignUpParams;
+  const { time, increment, side } = req.body;
+  const { userId } = res.locals.tokenData;
   try {
-    const result = await authenticationService.createUser({ username, email: email.toLowerCase(), password });
-    return res.sendStatus(httpStatus.CREATED);
+    const result = await gameSettingService.createGameSetting({ time, increment, side, userId });
+    return res.status(httpStatus.CREATED).send({ path: result });
   } catch (error) {
-    console.log(error)
-    if (error.name === "conflictError") {
-      return res.status(httpStatus.CONFLICT).send(error.message);  
-    }
-
-    if (error.name === "ServerError") {
-      return res.status(httpStatus.INTERNAL_SERVER_ERROR).send(error.message);
-    }
-    
+    console.log(error)    
     return res.sendStatus(httpStatus.UNPROCESSABLE_ENTITY);
   }
 

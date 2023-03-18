@@ -14,17 +14,34 @@ type SessionData = {
     token: string
   }
 
-async function deleteSession() {
-    
+async function updateSession(tokens: UpdateSessionData) {
+  return prisma.session.updateMany({
+    where: {
+      token: tokens.previousToken
+    },
+
+    data: {
+      token: tokens.newToken
+    }
+  })
 }
 
-async function find() {
-    
+type UpdateSessionData = {
+  previousToken: string,
+  newToken: string
+}
+
+async function find(refreshToken: string) {
+  return prisma.session.findFirst({
+    where: {
+      token: refreshToken
+    }
+  })
 }
 
 const sessionRepository = { 
   create,
-  deleteSession, 
+  updateSession, 
   find 
 };
 

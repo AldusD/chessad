@@ -4,7 +4,7 @@ import httpStatus from "http-status";
 
 import authenticationService, { SignInParams, SignUpParams } from "../services/authenticationService";
 
-export async function createGame(req: Request, res: Response) {
+export async function signIn(req: Request, res: Response) {
   const { email, password } = req.body as SignInParams;
 
   try {
@@ -37,4 +37,19 @@ export async function signUp(req: Request, res: Response) {
     return res.sendStatus(httpStatus.UNPROCESSABLE_ENTITY);
   }
 
+}
+
+export async function getToken(req: Request, res: Response) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.split(" ")[1]) return res.status(httpStatus.UNAUTHORIZED).send('refresh token expired or invalid');
+  const refreshToken = authHeader.split(" ")[1];
+  
+
+  try {
+    const result = await authenticationService.sendNewToken(refreshToken);
+    return res.status(httpStatus.OK).send({ token: result });
+  } catch (error) {
+    console.log(error);
+    return res.status(httpStatus.UNAUTHORIZED).send('refresh token expired or invalid');
+  }
 }

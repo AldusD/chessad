@@ -3,7 +3,7 @@ import sessionRepository from "../../repositories/sessionsRepository";
 import authenticationRepository from "../../repositories/authenticationRepository";
 import { createToken, TokenTypes } from "../../utils/token";
 import { encryptPassword, validatePassword } from "./password";
-import { conflictError, invalidCredentialsError, serverError } from "./errors";
+import { conflictError, invalidCredentialsError, serverError, unauthorizedError } from "./errors";
 
 export async function createUser({ username, email, password }: SignUpParams): Promise<User> {
   await validateUniqueEmail(email);
@@ -65,6 +65,25 @@ async function createSession(userId: string) {
   return { accessToken, refreshToken };
 }
 
+async function findSession(token: string) {
+  const session = await sessionRepository.find(token);
+  if (!session) throw unauthorizedError('refresh token expired or invalid');
+
+  return session;
+}
+
+async function sendNewToken(refreshToken: string): Promise<Tokens> {
+  const session = await findSession(refreshToken);
+  const newRefreshToken = createToken({ userId: session.userId, type: TokenTypes.refresh });
+  const newAccessToken = createToken({ userId: session.userId, type: TokenTypes.access });
+
+  const renewedSession = await sessionRepository.updateSession({ previousToken: refreshToken, newToken: newRefreshToken });
+  return { 
+      refreshToken: newRefreshToken,
+      accessToken: newAccessToken
+    } 
+}
+
 type SignInResult = {
   user: Pick<User, "id" | "email">;
   token: string;
@@ -90,7 +109,8 @@ type GetUserByEmailResult = Pick<User, "id" | "username" | "email" | "password" 
 
 const authenticationService = {
   login,
-  createUser
+  createUser,
+  sendNewToken
 };
 
 export default authenticationService;

@@ -39,7 +39,8 @@ export const GameFormStyles = styled.div`
   align-items: center;
   background-color: #00000080;
   width: 30rem;
-  height: 50vh;
+  height: 55vh;
+  min-height: fit-content;
   padding-bottom: 5vh;
   border: 4px #E4E4E4 solid;
   border-radius: 1rem;
@@ -53,7 +54,7 @@ export const GameFormStyles = styled.div`
     border: none;
     border-radius: 0.4rem;
     background-color: yellow;
-    margin-top: 4vh;
+    margin-top: 2vh;
     color: black;
     font-size: 1rem;
     font-weight: 600;
@@ -61,6 +62,10 @@ export const GameFormStyles = styled.div`
     :hover {
       background: #BF0;
     }
+  }
+
+  input::placeholder {
+    font-size: 0.8rem;
   }
 `;
 
@@ -140,7 +145,7 @@ export const Game = styled.div`
   border-radius: 0.2rem;
 
   :hover {
-    background-color: #FFFF0080;
+    background-color: #FFFF00CC;
   }
 
   > div {
@@ -179,6 +184,7 @@ export const Label = styled.div`
   color: white;
   font-size: 1rem;
   font-weight: bold;
+  border-bottom: 1px white solid;
 
   > div {
     display: flex;

@@ -20,3 +20,10 @@ export function serverError(): ApplicationError {
     message: "Server error, please try again later"
   };
 }
+
+export function unauthorizedError(message: string): ApplicationError {
+  return {
+    name: "unauthorizedError",
+    message: message || `invalid token`,
+  };
+}

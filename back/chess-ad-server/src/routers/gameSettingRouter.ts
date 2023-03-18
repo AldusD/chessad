@@ -1,14 +1,12 @@
 import { Router, Response } from "express";
 
-import { validateSchema } from "../middlewares";
-import { signUpSchema, signInSchema } from "../schemas";
-import { signUp, singIn } from "../controllers";
+import { validateSchema, verifyToken } from "../middlewares";
+import { getGameSettings, postGameSetting } from "../controllers";
 
 const gameSettingRouter = Router();
 const notImplement = (_: any, res: Response) => res.sendStatus(501);
 
-gameSettingRouter.get("/", notImplement);
-gameSettingRouter.post("/", validateSchema(signUpSchema), signUp);
-gameSettingRouter.post("/oauth/sign-in", notImplement);
+gameSettingRouter.get("/", getGameSettings);
+gameSettingRouter.post("/", verifyToken, postGameSetting);
 
 export { gameSettingRouter };

@@ -1,10 +1,8 @@
-import { useState, useContext, useEffect } from "react";
-import { useNavigate } from 'react-router-dom';
+import { useState } from "react";
 
-import { FormContainer, Header, Space } from "./styles";
+import { FormContainer, Space } from "./styles";
 import { FieldError } from '../comons/styles';
 import Form from "../comons/Form";
-import { useUser } from "../../contexts/UserContext";
 import { useSignup } from "../../hooks/api/useAuthentication";
 
 export default function SignupPage({ setSelectedForm }) {
@@ -27,22 +25,6 @@ export default function SignupPage({ setSelectedForm }) {
     data: signupData
   } = useSignup();
 
-  const validateForm = () => {
-    const blockSpecialChars = RegExp(/^[A-Za-z0-9 ]+$/);
-    const emailPattern = RegExp( /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/);
-    if (blockSpecialChars.test(form.username)) setFormErrors({...formErrors, username: 'username can not contain special characters'});
-    if (form.username.length <= 4) setFormErrors({...formErrors, username: 'username must be at least 4 long'});
-    if (form.username.length === 0) setFormErrors({...formErrors, username: 'username is a required'});
-    if (emailPattern.test(form.email)) setFormErrors({...formErrors, email: 'must be a valid email'});
-    if (form.email.length === 0) setFormErrors({...formErrors, email: 'email is required'});
-    if (form.password.length === 0) setFormErrors({...formErrors, password: 'password is required'});
-    if (form.confirmation.length === 0) setFormErrors({...formErrors, confirmation: 'password confirmation is required'});
-    if (form.confirmation != form.password) setFormErrors({...formErrors, confirmation: 'passwords must be the same'});
-    if (formErrors.username || formErrors.email || formErrors.password || formErrors.confirmation) {
-      setFormErrors({...formErrors, error: true })
-    } else setFormErrors({ username: '', email: '', password: '', confirmation: '', error: false });
-  }
-
   const getErrors = () => {
     const errors = { username: '', email: '', password: '', confirmation: '' };
     
@@ -55,7 +37,7 @@ export default function SignupPage({ setSelectedForm }) {
     if (form.email.length === 0) errors.email = 'email is required';
     if (form.password.length === 0) errors.password = 'password is required';
     if (form.confirmation.length === 0) errors.confirmation = 'confirmation is required';
-    if (form.confirmation != form.password) errors.confirmation = 'passwords must be the same';
+    if (form.confirmation !== form.password) errors.confirmation = 'passwords must be the same';
 
     setFormErrors(errors);
     if (errors.username || errors.email || errors.password || errors.confirmation) return true;

@@ -3,10 +3,10 @@ import { createContext, useContext, useState } from "react";
 const UserContext = createContext();
 
 function UserProvider({ children }) {
-  const API = 'http://localhost:5000';
+  const [userData, setUserData] = useState({});
 
   return (
-    <UserContext.Provider value={{ API }}>
+    <UserContext.Provider value={ {userData, setUserData} }>
       {children}
     </UserContext.Provider>
   );

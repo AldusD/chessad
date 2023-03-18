@@ -14,7 +14,7 @@ app
   .use(express.json())
   .get("/health", (_req, res) => res.send("1.e4!"))
   .use("/auth", authenticationRouter)
-  .use("/games-setting/", gameSettingRouter);
+  .use("/game-setting/", gameSettingRouter);
 
 export function init(): Promise<Express> {
   connectDb();

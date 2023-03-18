@@ -1,5 +1,6 @@
 import { useQuery, useMutation } from "react-query";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "../../contexts/UserContext";
 
 const API = process.env.REACT_APP_API_BASE_URL;
 
@@ -18,12 +19,14 @@ const register = async (userData) => {
 }
 
 export function useSignin () {
+  const { userData, setUserData } = useUser();
   const navigateToHome = (data, navigate) => {
-    console.log(data)
-    if (data[0] === '{') return;
-    const tokens = JSON.parse(data).token;
-    localStorage.setItem("accessToken", tokens.accessToken);
-    localStorage.setItem("refreshToken", tokens.refreshToken);
+    console.log('dtobj', data, data[0])
+    if (data[0] !== '{') return;
+    localStorage.setItem("accessToken", JSON.parse(data).token.accessToken);
+    localStorage.setItem("refreshToken", JSON.parse(data).token.refreshToken);
+    console.log('user', JSON.parse(data).user)
+    setUserData({ ...JSON.parse(data).user });
     return;
   }
   

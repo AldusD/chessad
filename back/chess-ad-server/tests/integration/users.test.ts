@@ -30,7 +30,7 @@ describe("POST /auth/sign-in", () => {
 
   describe("when body is valid", () => {
     const generateValidBody = () => ({
-      email: faker.internet.email(),
+      email: faker.internet.email().toLowerCase(),
       password: faker.internet.password(6),
     });
 
@@ -71,8 +71,8 @@ describe("POST /auth/sign-in", () => {
           }
         });
 
-        expect(typeof(response.body.token.accessToken)).toBe("string");
         expect(response.status).toBe(httpStatus.OK);
+        expect(typeof(response.body.token.accessToken)).toBe("string");
         expect(response.body.token.refreshToken).toBe(session.token);
         expect(response.body.user).toEqual({
           username: checkUser.username,
@@ -99,7 +99,7 @@ describe("POST /auth/sign-up", () => {
   it("should respond with status 422 when body is not valid (password)", async () => {
     const invalidBody = { 
       username: faker.lorem.word(),
-      email: faker.internet.email(),
+      email: faker.internet.email().toLowerCase(),
       password: faker.internet.password(2),
      };
     const response = await server.post("/auth/sign-up").send(invalidBody);
@@ -118,8 +118,8 @@ describe("POST /auth/sign-up", () => {
   
   it("should respond with status 422 when body is not valid (username)", async () => {
     const invalidBody = { 
-      username: faker.internet.email(),
-      email: faker.internet.email(),
+      username: faker.internet.email().toLowerCase(),
+      email: faker.internet.email().toLowerCase().toLowerCase(),
       password: faker.internet.password(6),
      };
     const response = await server.post("/auth/sign-up").send(invalidBody);
@@ -129,14 +129,14 @@ describe("POST /auth/sign-up", () => {
   describe("when body is valid", () => {
     const generateValidBody = () => ({
       username: faker.lorem.word(4),
-      email: faker.internet.email(),
+      email: faker.internet.email().toLowerCase(),
       password: faker.internet.password(6),
     });
 
     it("should respond with status 409 if there is already an user for given email", async () => {
       const body = generateValidBody();
       await createUser({ email: body.email });
-
+      
       const response = await server.post("/auth/sign-up").send(body);
 
       expect(response.status).toBe(httpStatus.CONFLICT);
@@ -144,7 +144,7 @@ describe("POST /auth/sign-up", () => {
 
     it("should respond with status 409 if username is already in use", async () => {
       const body = generateValidBody();
-      await createUser({ email: faker.internet.email(), username: body.username });
+      await createUser({ email: faker.internet.email().toLocaleLowerCase(), username: body.username });
 
       const response = await server.post("/auth/sign-up").send(body);
 
