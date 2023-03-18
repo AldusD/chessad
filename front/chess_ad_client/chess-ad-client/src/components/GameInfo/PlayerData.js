@@ -3,7 +3,7 @@ import { useGame } from "../../contexts/GameContext";
 import GameOptions from "./GameOptions";
 import { Data } from "./styles"
 
-export default function PlayerData ({ profilePicture, username, color, showOptions }) {
+export default function PlayerData ({ profilePicture, username, color, showOptions, isAnalysisBoard }) {
     const { gameStatus, STATUS } = useGame();
     const [score, setScore] = useState('0');
     useEffect(() => {
@@ -18,7 +18,7 @@ export default function PlayerData ({ profilePicture, username, color, showOptio
               <img  src={profilePicture} alt={username} />
               <span>{username}</span>
             </div>
-            { showOptions ? <GameOptions /> : <></> }
+            { showOptions ? <GameOptions isAnalysisBoard={isAnalysisBoard} color={color} /> : <></> }
           </div>
           <div className="clock"><span>3:00</span></div>
         </Data>

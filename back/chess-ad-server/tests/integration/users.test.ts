@@ -61,7 +61,8 @@ describe("POST /auth/sign-in", () => {
         const response = await server.post("/auth/sign-in").send(body);
 
         expect(response.status).toBe(httpStatus.OK);
-        expect(response.body.token).toBeDefined();
+        expect(typeof(response.body.token.accessToken)).toBe("string");
+        expect(typeof(response.body.token.refreshToken)).toBe("string");
       });
     });
   });
@@ -79,16 +80,46 @@ describe("POST /auth/sign-up", () => {
     expect(response.status).toBe(httpStatus.UNPROCESSABLE_ENTITY);
   });
 
+  it("should respond with status 422 when body is not valid (password)", async () => {
+    const invalidBody = { 
+      username: faker.lorem.word(),
+      email: faker.internet.email(),
+      password: faker.internet.password(2),
+     };
+    const response = await server.post("/auth/sign-up").send(invalidBody);
+    expect(response.status).toBe(httpStatus.UNPROCESSABLE_ENTITY);
+  });
+
+  it("should respond with status 422 when body is not valid (email)", async () => {
+    const invalidBody = { 
+      username: faker.lorem.word(),
+      email: faker.lorem.word(),
+      password: faker.internet.password(6),
+     };
+    const response = await server.post("/auth/sign-up").send(invalidBody);
+    expect(response.status).toBe(httpStatus.UNPROCESSABLE_ENTITY);
+  });
+  
+  it("should respond with status 422 when body is not valid (username)", async () => {
+    const invalidBody = { 
+      username: faker.internet.email(),
+      email: faker.internet.email(),
+      password: faker.internet.password(6),
+     };
+    const response = await server.post("/auth/sign-up").send(invalidBody);
+    expect(response.status).toBe(httpStatus.UNPROCESSABLE_ENTITY);
+  });
+
   describe("when body is valid", () => {
     const generateValidBody = () => ({
-      username: faker.lorem.word(),
+      username: faker.lorem.word(4),
       email: faker.internet.email(),
       password: faker.internet.password(6),
     });
 
     it("should respond with status 409 if there is already an user for given email", async () => {
       const body = generateValidBody();
-      createUser({ email: body.email });
+      await createUser({ email: body.email });
 
       const response = await server.post("/auth/sign-up").send(body);
 
@@ -97,7 +128,7 @@ describe("POST /auth/sign-up", () => {
 
     it("should respond with status 409 if username is already in use", async () => {
       const body = generateValidBody();
-      createUser({ email: faker.internet.email(), username: body.username });
+      await createUser({ email: faker.internet.email(), username: body.username });
 
       const response = await server.post("/auth/sign-up").send(body);
 
@@ -107,7 +138,7 @@ describe("POST /auth/sign-up", () => {
     it("should respond with status 201", async () => {
       const body = generateValidBody();
 
-      const response = await server.post("/auth/sign-in").send(body);
+      const response = await server.post("/auth/sign-up").send(body);
 
       expect(response.status).toBe(httpStatus.CREATED);
     });

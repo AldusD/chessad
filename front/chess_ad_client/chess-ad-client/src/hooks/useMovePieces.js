@@ -1,37 +1,52 @@
-const PIECES_XP_BARRIER = { KNIGHT: 5, BISHOP: 5, ROOK: 7, QUEEN: 10 };
+import { PIECES, PIECES_XP_BARRIER, COLORS, ACTIVE_TIME } from "../components/ChessSet/enums"; 
 
 export function useMovePieces () {
   const move = (moveInfo) => {
-    const moveDetails = validateMove({...moveInfo, pieces: {...moveInfo.pieces}});
-    if (moveDetails.error) return { error: true };
-    if (moveDetails.abortUpdate) return { position: {...moveDetails.pieces} };
-    const inCheck = isInCheck({ color: moveDetails.color, pieces: updatePosition(moveDetails), kingSquare: updatePosition(moveDetails).kingsCoord[moveDetails.color] });
-    if (inCheck.error) return { error: true };
+    const { pieces } = moveInfo;
+    const previousPosition = JSON.parse(JSON.stringify(pieces)); // isolate the previous position from the move attempt errors
+    const moveDetails = validateMove({...moveInfo, pieces: {...previousPosition}});
 
-    changePositionStats(moveDetails);
-    const position = updatePosition(moveDetails);
+    if (moveDetails.error) return { error: true };
+    let position = moveDetails.pieces;
+
+    if (!moveDetails.abortUpdate) {
+      const inCheck = isInCheck({ color: moveDetails.color, pieces: updatePosition(moveDetails), kingSquare: updatePosition(moveDetails).kingsCoord[moveDetails.color] });
+      if (inCheck.error) return { error: true };
+
+      changePositionStats(moveDetails);
+      position = updatePosition(moveDetails);
+    } else {
+        const inCheck = isInCheck({ color: moveDetails.color, pieces: moveDetails.pieces, kingSquare: moveDetails.pieces.kingsCoord[moveDetails.color] });
+        if (inCheck.error) return { error: true };
+    }
+    const finalPositionClone = JSON.parse(JSON.stringify(position)); // to check fading pieces discovered check
+    killInvisiblePieces({ pieces: finalPositionClone });
+    
+    const fadingPieceCheck = isInCheck({ color: moveDetails.color, pieces: finalPositionClone, kingSquare: finalPositionClone.kingsCoord[moveDetails.color] });
+    if (fadingPieceCheck.error) return { error: true };
+
     const stats = isCheckmate({ pieces: position, color: moveDetails.color, });
     return { position, checkmate: stats.checkmate };
   }
   
   const validatePawn = moveInfo => {
     const { coordI, coordF, numCoordI, numCoordF, pieces, color, promote } = moveInfo;
-    const moveOneFowardRule = (numCoordI[0] === numCoordF[0] + 1) && color === 'white' || (numCoordI[0] === numCoordF[0] - 1) && color === 'black'; 
-    const moveTwoFowardRule = (numCoordI[0] === numCoordF[0] + 2) && color === 'white' && numCoordI[0] === 7 ||  (numCoordI[0] === numCoordF[0] - 2) && color === 'black' && numCoordI[0] === 2;
+    const moveOneFowardRule = (numCoordI[0] === numCoordF[0] + 1) && color === COLORS.WHITE || (numCoordI[0] === numCoordF[0] - 1) && color === COLORS.BLACK; 
+    const moveTwoFowardRule = (numCoordI[0] === numCoordF[0] + 2) && color === COLORS.WHITE && numCoordI[0] === 7 ||  (numCoordI[0] === numCoordF[0] - 2) && color === COLORS.BLACK && numCoordI[0] === 2;
     const captureRule = () => {
       if(numCoordI[1] === numCoordF[1]) {
         if (Math.abs(numCoordI[0] - numCoordF[0]) === 1 && !pieces[coordF]) return true;
         if (Math.abs(numCoordI[0] - numCoordF[0]) === 2 && !pieces[coordF]) 
-          if ((!pieces[(numCoordI[0] - 1) + coordI[1]] && color === 'white') || !pieces[(numCoordI[0] + 1) + coordI[1]] && color === 'black') return true;
+          if ((!pieces[(numCoordI[0] - 1) + coordI[1]] && color === COLORS.WHITE) || !pieces[(numCoordI[0] + 1) + coordI[1]] && color === COLORS.BLACK) return true;
       }
 
       if (Math.abs(numCoordI[1] - numCoordF[1]) === 1)
-        if ((color === 'white' && numCoordI[0] === numCoordF[0] + 1) || (color === 'black' && numCoordI[0] === numCoordF[0] - 1))  return true;
+        if ((color === COLORS.WHITE && numCoordI[0] === numCoordF[0] + 1) || (color === COLORS.BLACK && numCoordI[0] === numCoordF[0] - 1))  return true;
 
       return false;
     };
     const enPassantRule = () => {
-      const jumpPawn = (color === 'white') ? (numCoordF[0] + 1) + coordF[1] : (numCoordF[0] - 1) + coordF[1];
+      const jumpPawn = (color === COLORS.WHITE) ? (numCoordF[0] + 1) + coordF[1] : (numCoordF[0] - 1) + coordF[1];
 
       if (Math.abs(numCoordI[1] - numCoordF[1]) === 1) {
         if (pieces[jumpPawn] && pieces[jumpPawn].jumpTime === pieces.move){
@@ -45,7 +60,7 @@ export function useMovePieces () {
       return { valid: true };
       };
     const promotionRule = () => {
-      const backrankRule = coordF[0] === '1' && color === 'white' || coordF[0] === '8' && color === 'black';
+      const backrankRule = coordF[0] === '1' && color === COLORS.WHITE || coordF[0] === '8' && color === COLORS.BLACK;
       const noJumpsRule = Math.abs(numCoordF[0] - numCoordI[0]) === 1;
       if (backrankRule && noJumpsRule) return true;
 
@@ -92,7 +107,6 @@ export function useMovePieces () {
     const { coordI, coordF, numCoordI, numCoordF, pieces, color, rookObstacleRule } = moveInfo;
     const crossRule = (numCoordF[0] - numCoordI[0] === 0 || numCoordF[1] - numCoordI[1] === 0);
     const obstacleRule = rookObstacleRule();
-
     if (crossRule && obstacleRule) return true;
     return { error: true };
   }
@@ -114,11 +128,12 @@ export function useMovePieces () {
     const yMove = numCoordF[0] - numCoordI[0];
     const xMove = numCoordF[1] - numCoordI[1];
     const kingBoundaryRule = (Math.abs(xMove) <= 1 && Math.abs(yMove) <= 1);
+    const tryingCastle = (pieces[coordF] && pieces[coordF].color === color);
     const castleRule = () => {
       // capture on same color rule includes an exception to allow castle  
-      const myRookRule = pieces[coordF] && pieces[coordF].color === color; 
-      const notMovedRule = myRookRule && !(movingPiece.hasMoved || pieces[coordF].hasMoved);
-      if (!notMovedRule) return false;
+      const myRookRule = pieces[coordF] && pieces[coordF].color === color;
+      const notMovedRule = !movingPiece.hasMoved && !pieces[coordF]?.hasMoved;
+      if (!notMovedRule || !myRookRule) return false;
       
       const CastleType = Math.abs(numCoordF[1] - numCoordI[1]) - 1;
       const step = Math.abs(numCoordF[1] - numCoordI[1]) /  (numCoordF[1] - numCoordI[1]);
@@ -144,13 +159,13 @@ export function useMovePieces () {
           } 
         } 
       };
-    if (kingBoundaryRule) return true;
+    if (kingBoundaryRule && !tryingCastle) return true;
     return { error: true };
   }
 
   const validateZombie = moveInfo => {
     const { coordI, coordF, numCoordI, numCoordF, pieces, color, movingPiece } = moveInfo;
-    const direction = (color === 'white') ? -1 : 1;
+    const direction = (color === COLORS.WHITE) ? -1 : 1;
     const oneFowardRule = (numCoordF[0] - numCoordI[0]) === direction;
     const boundaryRule = Math.abs(numCoordF[1] - numCoordI[1]) <= 1;
     const notRottenRule = movingPiece.active > pieces.move;
@@ -161,26 +176,33 @@ export function useMovePieces () {
 
   const validateSpellEffects = moveInfo => {
     const { coordF, pieces } = moveInfo;
-    const isPowerKnight = pieces[coordF]?.name.slice(2) === 'Knight';
-    const isBrokenTile = pieces[coordF]?.name.slice(1) === 'Broken';
+    const isPowerKnight = pieces[coordF]?.name.slice(2) === PIECES.KNIGHT;
+    const isBrokenTile = pieces[coordF]?.name.slice(1) === PIECES.BROKEN;
     const isActive = pieces[coordF]?.active > pieces.move;
     
     if (isActive && (isPowerKnight || isBrokenTile)) return { error: true };
     return { error: false };
   }
 
-  const killInvisiblePiece = moveInfo => {
-    const { coordF, pieces } = moveInfo;
-    const visiblePieces = {...pieces};
-    const isSpellPiece = pieces[coordF]?.name.slice(1) === 'Broken' || pieces[coordF]?.name.slice(1) === 'Zombie'; 
-    const isActive = pieces[coordF]?.active > pieces.move;
-    if (isSpellPiece && !isActive) visiblePieces[coordF] = null;
-    return visiblePieces; 
+  const killInvisiblePieces = moveInfo => {
+    const { pieces } = moveInfo;
+    const isSpellPiece = piece => piece?.name.slice(1) === PIECES.BROKEN || piece?.name.slice(1) === PIECES.ZOMBIE; 
+    const isActive = piece => piece?.active > pieces.move;
+
+    const piecesArr = Object.entries(pieces);
+    for (let i = 0; i < piecesArr.length; i++) {
+      const coord = piecesArr[i][0];
+      const piece = piecesArr[i][1];
+
+      if (coord === 'move' || coord === 'kingsCoord') continue;
+      if (isSpellPiece(piece) && !isActive(piece)) pieces[coord] = null;
+    }
+    return; 
   }
 
   const isCheckmate = moveInfo => {
     const { pieces, color } = moveInfo;
-    const enemyColor = (color === 'white') ? 'black' : 'white';
+    const enemyColor = (color === COLORS.WHITE) ? COLORS.BLACK : COLORS.WHITE;
     const kingSquare = pieces.kingsCoord[enemyColor];
     const checkingPieces = isInCheck({ pieces, color: enemyColor, kingSquare }).checkingPieces;
     if (checkingPieces?.length > 0) {
@@ -204,7 +226,7 @@ export function useMovePieces () {
       // { coordI, coordF, numCoordI, numCoordF, pieces, color }      
       const pawnBlock = blockInfo => {
         const { coord, checkingPiece, color } = blockInfo; 
-        const direction = (color === 'white') ? -1 : 1;
+        const direction = (color === COLORS.WHITE) ? -1 : 1;
         const foward = `${Number(coord[0]) - direction}${coord[1]}`;
         const jump = `${Number(coord[0]) - 2 * direction}${coord[1]}`;
         const passantLeft = `${Number(checkingPiece.coord[0])}${Number(checkingPiece.coord[1]) - 1}`;
@@ -238,8 +260,8 @@ export function useMovePieces () {
 
         if (!inCheck1.error) return true;
         if (!inCheck2.error) return true;
-        if (pieces[checkingPiece.coord]?.name.includes('Pawn') && !inCheck3.error) return true;
-        if (pieces[checkingPiece.coord]?.name.includes('Pawn') && !inCheck4.error) return true;
+        if (pieces[checkingPiece.coord]?.name.includes(PIECES.PAWN) && !inCheck3.error) return true;
+        if (pieces[checkingPiece.coord]?.name.includes(PIECES.PAWN) && !inCheck4.error) return true;
         
         return false;
       }
@@ -294,20 +316,20 @@ export function useMovePieces () {
 
   const isInCheck = moveInfo => {
     const { pieces, color, kingSquare } = moveInfo;
-    const enemyColor = (color === 'white') ? 'black' : 'white';
+    const enemyColor = (color === COLORS.WHITE) ? COLORS.BLACK : COLORS.WHITE;
     const checkingPieces = [];
 
     const pawnCheck = () => {
-      const direction = (enemyColor === 'white') ? 1 : -1;
+      const direction = (enemyColor === COLORS.WHITE) ? 1 : -1;
       const leftPawn = (kingSquare[1][0] + direction).toString() + (kingSquare[1][1] - 1);
       const rightPawn = (kingSquare[1][0] + direction).toString() + (kingSquare[1][1] + 1);
       let check = false;
 
-      if (pieces[leftPawn] && pieces[leftPawn].color === enemyColor && pieces[leftPawn].name.includes('Pawn')) {
+      if (pieces[leftPawn] && pieces[leftPawn].color === enemyColor && pieces[leftPawn].name.includes(PIECES.PAWN)) {
         checkingPieces.push({ coord: leftPawn, checkDirection: 'pawn' });
         check = true;
       }
-      if (pieces[rightPawn] && pieces[rightPawn].color === enemyColor && pieces[rightPawn].name.includes('Pawn')) {
+      if (pieces[rightPawn] && pieces[rightPawn].color === enemyColor && pieces[rightPawn].name.includes(PIECES.PAWN)) {
         checkingPieces.push({ coord: rightPawn, checkDirection: 'pawn' });
         check = true;
       }
@@ -317,11 +339,11 @@ export function useMovePieces () {
     }
 
     const zombieCheck = () => {
-      const direction = (enemyColor === 'white') ? 1 : -1;
+      const direction = (enemyColor === COLORS.WHITE) ? 1 : -1;
       const frontZombie = (kingSquare[1][0] + direction).toString() + (kingSquare[1][1]);
       const leftZombie = (kingSquare[1][0] + direction).toString() + (kingSquare[1][1] - 1);
       const rightZombie = (kingSquare[1][0] + direction).toString() + (kingSquare[1][1] + 1);
-      const noTrheatRule = zombie => (zombie && zombie.color === enemyColor && zombie.name.includes('Zombie') && zombie.active > pieces.move);
+      const noTrheatRule = zombie => (zombie && zombie.color === enemyColor && zombie.name.includes(PIECES.ZOMBIE) && zombie.active > pieces.move);
       let check = false;
       
       if (noTrheatRule(pieces[frontZombie])) {
@@ -345,8 +367,8 @@ export function useMovePieces () {
       const lookForKnight = (dirX, dirY) => {
         const coord1 = ((kingSquare[1][0] + 2 * dirY).toString() + (kingSquare[1][1] + 1 * dirX));
         const coord2 = ((kingSquare[1][0] + 1 * dirY).toString() + (kingSquare[1][1] + 2 * dirX));
-        const knight1 = (pieces[coord1] && pieces[coord1].name.includes('Knight') && pieces[coord1].color === enemyColor);
-        const knight2 = (pieces[coord2] && pieces[coord2].name.includes('Knight') && pieces[coord2].color === enemyColor);
+        const knight1 = (pieces[coord1] && pieces[coord1].name.includes(PIECES.KNIGHT) && pieces[coord1].color === enemyColor);
+        const knight2 = (pieces[coord2] && pieces[coord2].name.includes(PIECES.KNIGHT) && pieces[coord2].color === enemyColor);
         let check = false;
 
         if (knight1) {
@@ -374,7 +396,7 @@ export function useMovePieces () {
     }
 
     const crossCheck = () => {
-      const isCrossPiece = name => (name.includes('Queen') || name.includes('Rook'));
+      const isCrossPiece = name => (name.includes(PIECES.QUEEN) || name.includes(PIECES.ROOK));
       let check = false;
 
       // checking crosscheck in all four directions
@@ -423,7 +445,7 @@ export function useMovePieces () {
     }
 
     const diagonalCheck = () => {
-      const isDiagonalPiece = name => (name.includes('Queen') || name.includes('Bishop'));  
+      const isDiagonalPiece = name => (name.includes(PIECES.QUEEN) || name.includes(PIECES.BISHOP));  
       let check = false;
 
       // checking diagonalcheck in all four directions
@@ -529,17 +551,16 @@ export function useMovePieces () {
       return true;
     }
 
-    if ((pieces.move % 2 === 0 && color === 'white') || (pieces.move % 2 === 1 && color === 'black')) return { error: true };
-    if (pieces[coordF]) {
-      const visiblePieces = killInvisiblePiece(info);
-      pieces[coordF] = visiblePieces[coordF];
-    }
+    if ((pieces.move % 2 === 0 && color === COLORS.WHITE) || (pieces.move % 2 === 1 && color === COLORS.BLACK)) return { error: true };
+    killInvisiblePieces(info);
+    
 
     // cannot capture same color piece + exceptions
     if (pieces[coordF] && pieces[coordF].color === color) {
       const destinationType = pieces[coordF].name.slice(1);
-      const castleException = (pieceType === 'King' && destinationType === 'Rook');
-      if (!castleException) return { error: true };
+      const castleException = (pieceType === PIECES.KING && destinationType === PIECES.ROOK);
+      const rookSpellException = (pieceType === PIECES.ROOK && usingSpell);
+      if (!castleException && !rookSpellException) return { error: true };
     }
 
     // spell effects
@@ -547,14 +568,14 @@ export function useMovePieces () {
     if (spellEffects.error) return { error: true };
 
     // pieces movement constraints
-    if (pieceType === 'Broken') return { error: true };
-    if (pieceType === 'Pawn') details.data = { ...details.data , ...validatePawn({...info, promote}) };
-    if (pieceType === 'Knight') details.data = { ...details.data , ...validateKnight({...info}) };
-    if (pieceType === 'Bishop') details.data = { ...details.data , ...validateBishop({ ...info, bishopObstacleRule }) };
-    if (pieceType === 'Rook') details.data = { ...details.data , ...validateRook({ ...info, rookObstacleRule }) };
-    if (pieceType === 'Queen') details.data = { ...details.data , ...validateQueen({ ...info, bishopObstacleRule, rookObstacleRule }) };  
-    if (pieceType === 'King') details.data = { ...details.data , ...validateKing({...info}) };
-    if (pieceType === 'Zombie') details.data = {...details.data, ...validateZombie({...info})};
+    if (pieceType === PIECES.BROKEN) return { error: true };
+    if (pieceType === PIECES.PAWN) details.data = { ...details.data , ...validatePawn({...info, promote}) };
+    if (pieceType === PIECES.KNIGHT) details.data = { ...details.data , ...validateKnight({...info}) };
+    if (pieceType === PIECES.BISHOP) details.data = { ...details.data , ...validateBishop({ ...info, bishopObstacleRule }) };
+    if (pieceType === PIECES.ROOK) details.data = { ...details.data , ...validateRook({ ...info, rookObstacleRule }) };
+    if (pieceType === PIECES.QUEEN) details.data = { ...details.data , ...validateQueen({ ...info, bishopObstacleRule, rookObstacleRule }) };  
+    if (pieceType === PIECES.KING) details.data = { ...details.data , ...validateKing({...info}) };
+    if (pieceType === PIECES.ZOMBIE) details.data = {...details.data, ...validateZombie({...info})};
     if (details.data.error) return details.data;
     
     // activating spell
@@ -582,7 +603,6 @@ export function useMovePieces () {
     }
 
     if (name === 'promotion') {
-      // (TO BE IMPLEMENTED) promotion to pieces other than queen
       const { promote } = specialMove.info;
       pieces[coordI].name = promote;
       pieces[coordI].xp = 0;
@@ -614,39 +634,39 @@ export function useMovePieces () {
     if (!isPowerful || !enoughXp) return { error: true }; 
     pieces[coordI].xp = -1;
 
-    if (pieceType === 'Knight') {
-      pieces[coordI].active = pieces.move + 5;
+    if (pieceType === PIECES.KNIGHT) {
+      pieces[coordI].active = pieces.move + ACTIVE_TIME.KNIGHT;
       return { pieces };
     }
 
-    if (pieceType === 'Bishop') {
+    if (pieceType === PIECES.BISHOP) {
       changePositionStats({ pieces, coordI, coordF });
       const bishop = pieces[coordI]
       pieces[coordF] = bishop;
       pieces[coordI] = {
-        name: bishop.color[0] + 'Zombie',
+        name: bishop.color[0] + PIECES.ZOMBIE,
         color: bishop.color,
-        active: (pieces.move - 1) + 4,
+        active: (pieces.move - 1) + ACTIVE_TIME.ZOMBIE,
         xp: 0
       };
       return { abortUpdate: true, pieces };
     }
 
-    if (pieceType === 'Rook') {
+    if (pieceType === PIECES.ROOK) {
       changePositionStats({ pieces, coordI, coordF });
       pieces[coordI].xp = 0;
       pieces[coordF] = {
         name: 'sBroken',
         color: 'none',
-        active: (pieces.move - 1) + 4,
+        active: (pieces.move - 1) + ACTIVE_TIME.BROKEN,
         xp: 0
       };
       return { abortUpdate: true, pieces };
     }
 
-    if (pieceType === 'Queen') {
+    if (pieceType === PIECES.QUEEN) {
       const queen = pieces[coordI];
-      const isPieceValid = piece => piece[1]?.name.includes('Knight') || piece[1]?.name.includes('Bishop') || piece[1]?.name.includes('Rook');  
+      const isPieceValid = piece => piece[1]?.name.includes(PIECES.KNIGHT) || piece[1]?.name.includes(PIECES.BISHOP) || piece[1]?.name.includes(PIECES.ROOK);  
       const affectedPieces = Object.entries(pieces).filter(piece => (piece[1]?.color === queen.color && isPieceValid(piece)));
       for (let i = 0; i < affectedPieces.length; i++) {
         const p = affectedPieces[i];
@@ -684,7 +704,7 @@ export function useMovePieces () {
     const type = movingPiece.name.slice(1);
     const xpBarrier = movingPiece.xpBarrier;
 
-    if (type === 'Pawn' || type === 'King' || type === 'Zombie') return;
+    if (type === PIECES.PAWN || type === PIECES.KING || type === PIECES.ZOMBIE) return;
 
     movingPiece.xp = (movingPiece.xp >= movingPiece.xpBarrier) ? movingPiece.xpBarrier : movingPiece.xp + 1;
     if (pieces[coordF]) {
@@ -712,5 +732,7 @@ export function useMovePieces () {
     const currentState = movePiece({ pieces: {...pieces}, coordI, coordF });
     return currentState;
   }
-  return [move];
+  return [
+    move
+  ];
 }

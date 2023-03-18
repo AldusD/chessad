@@ -3,7 +3,7 @@ import styled from "styled-components";
 export const Bar = styled.div`
   height: 7vh;
   width: 1vh;
-  background-color: green;
+  background-color: ${props => props.color};
   position: absolute;
   right: 0.25rem;
   
@@ -11,7 +11,7 @@ export const Bar = styled.div`
   content: '';
   height: ${props => props.fill};
   width: 1vh;
-  background-color: darkred;
+  background-color: ${props => props.bgColor};
   }
 `;
 

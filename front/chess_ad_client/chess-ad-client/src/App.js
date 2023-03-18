@@ -6,10 +6,14 @@ import HowToPlay from './components/pages/HowToPlay';
 import Home from './components/pages/Home';
 import { GameProvider } from "./contexts/GameContext";
 import { UserProvider } from './contexts/UserContext';
+import { QueryClientProvider, QueryClient } from 'react-query';
 
 function App() {
+  const queryClient = new QueryClient();
+
   return (
     <div className="App">
+      <QueryClientProvider client={queryClient} >
       <UserProvider>
       <GameProvider>
         <BrowserRouter >
@@ -22,6 +26,7 @@ function App() {
         </BrowserRouter>
       </GameProvider>
       </UserProvider>
+      </QueryClientProvider>
     </div>
   );
 }

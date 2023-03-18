@@ -13,27 +13,27 @@ export default function Square (props) {
   
   const movePiece = info => {
     setPromotion([false, '']);
+    
     const moveInfo = move({ 
       coordI: info.selectedSquare, 
       coordF: info.coordinates, 
-      pieces: info.pieces,
+      pieces: {...info.pieces},
       usingSpell: info.usingSpell,
       promote: info.promote
     });
-    if(moveInfo.error) {
-      setPromotion(false, '');
-      setSelectedSquare(coordinates);
-      return;
-    };
     
-    setPieces(moveInfo.position);
-    setUsingSpell(false);
-    if(moveInfo.checkmate) {
-      setGameStatus(STATUS[moveInfo.checkmate]);
+    if(!moveInfo.error) {
+      setPieces(moveInfo.position);
+      setUsingSpell(false);
+      if(moveInfo.checkmate) setGameStatus(STATUS[moveInfo.checkmate]);
+      refresh.set(!refresh.value);
+      return setSelectedSquare(null);
+      
+    } else {
+      setPromotion(false, '');
+      return setSelectedSquare(coordinates);
     }
-    refresh.set(!refresh.value);
-    return setSelectedSquare(null);
-    }
+  }
     
   const selectSquare = () => {
     const previousPiece = pieces[selectedSquare];
@@ -47,7 +47,7 @@ export default function Square (props) {
         setPromotion([coordinates, '']);
         return;
       }
-      return movePiece({ selectedSquare, coordinates, pieces, usingSpell, pointOfView });
+      return movePiece({ selectedSquare, coordinates, pieces: {...pieces}, usingSpell, pointOfView });
     }  
 
     setSelectedSquare(coordinates);

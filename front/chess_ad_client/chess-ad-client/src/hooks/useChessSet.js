@@ -1,3 +1,5 @@
+import { PIECES, PIECES_XP_BARRIER, COLORS } from "../components/ChessSet/enums";
+
 export function useChessSet () {
   const startCoordinates = () => {
     const coordinates = [];
@@ -35,11 +37,11 @@ export function useChessSet () {
     // back rank pieces
     for(let i = 1; i <= 8; i++) {
       let info = {};
-      if (i === 1 || i === 8) info = { name: 'wRook', xpBarrier: 7 };
-      else if (i === 2 || i === 7) info = { name: 'wKnight', xpBarrier: 5 };
-      else if (i === 3 || i === 6) info = { name: 'wBishop', xpBarrier: 5 };
-      else if (i === 4) info = { name: 'wQueen', xpBarrier: 10 };
-      else if (i === 5) info = { name: 'wKing' };
+      if (i === 1 || i === 8) info = { name: 'wRook', xpBarrier: PIECES_XP_BARRIER.ROOK, hasMoved: false };
+      else if (i === 2 || i === 7) info = { name: 'wKnight', xpBarrier: PIECES_XP_BARRIER.KNIGHT, hasMoved: false };
+      else if (i === 3 || i === 6) info = { name: 'wBishop', xpBarrier: PIECES_XP_BARRIER.BISHOP, hasMoved: false };
+      else if (i === 4) info = { name: 'wQueen', xpBarrier: PIECES_XP_BARRIER.QUEEN, hasMoved: false };
+      else if (i === 5) info = { name: 'wKing', hasMoved: false };
       
       toSetPieces['8' + i] = {
         ...info,
@@ -47,11 +49,11 @@ export function useChessSet () {
         xp: 0
       }
 
-      if (i === 1 || i === 8) info = { name: 'bRook', xpBarrier: 10 };
-      else if (i === 2 || i === 7) info = { name: 'bKnight', xpBarrier: 5 };
-      else if (i === 3 || i === 6) info = { name: 'bBishop', xpBarrier: 5 };
-      else if (i === 4) info = { name: 'bQueen', xpBarrier: 10 };
-      else if (i === 5) info = { name: 'bKing' };
+      if (i === 1 || i === 8) info = { name: 'bRook', xpBarrier: PIECES_XP_BARRIER.ROOK, hasMoved: false };
+      else if (i === 2 || i === 7) info = { name: 'bKnight', xpBarrier: PIECES_XP_BARRIER.KNIGHT, hasMoved: false };
+      else if (i === 3 || i === 6) info = { name: 'bBishop', xpBarrier: PIECES_XP_BARRIER.BISHOP, hasMoved: false };
+      else if (i === 4) info = { name: 'bQueen', xpBarrier: PIECES_XP_BARRIER.QUEEN, hasMoved: false };
+      else if (i === 5) info = { name: 'bKing', hasMoved: false };
       
       toSetPieces['1' + i] = {
         ...info,
@@ -65,6 +67,6 @@ export function useChessSet () {
   
   return [
     startCoordinates,
-    startPieces
-  ]
+    startPieces,
+  ];
 } 
