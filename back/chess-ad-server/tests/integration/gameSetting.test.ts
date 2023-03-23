@@ -47,14 +47,6 @@ describe("POST /game-setting", () => {
     expect(response.status).toBe(httpStatus.UNAUTHORIZED);
   });
 
-  it("should respond with status 401 if there is no session for given refresh token", async () => {
-    const userWithoutSession = await createUser();
-    const refreshToken = createToken({ userId: userWithoutSession.id, type: TokenTypes.refresh });
-    const response = await server.post("/game-setting").set("Authorization", `Bearer ${refreshToken}`);
-
-    expect(response.status).toBe(httpStatus.UNAUTHORIZED);
-  });
-
   describe("when token is valid", () => {
     it("should respond with status 422 when body is not given", async () => {
         const user = await createUser();

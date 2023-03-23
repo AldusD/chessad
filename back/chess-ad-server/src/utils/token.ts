@@ -18,6 +18,6 @@ function createToken(payload: TokenData, expiration?: string | number) {
   return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn });
 }
 
-const getTokenDataOrFail = (token: string, callback: any) => jwt.verify(token, process.env.TOKEN_SECRET, callback);
+const getTokenDataOrFail = (token: string, callback: any) => jwt.verify(token, process.env.JWT_SECRET, callback);
 
 export { createToken, getTokenDataOrFail, TokenTypes, TokenData };

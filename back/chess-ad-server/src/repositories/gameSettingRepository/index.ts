@@ -1,5 +1,5 @@
 import { prisma } from "../../config";
-import { Prisma } from "@prisma/client";
+import { GameSettingData } from "../../services/gameSettingService";
 
 async function findAll() {
   try {
@@ -18,8 +18,20 @@ async function findAll() {
   }  
 };
 
+async function create(gameSettingData: GameSettingData) { 
+  try {
+    const game = await prisma.gameSetting.create({
+      data: gameSettingData
+    });
+    return game;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 const gameSettingRepository = {
-  findAll 
+  findAll,
+  create
 };
 
 export default gameSettingRepository;

@@ -8,16 +8,21 @@ async function listGameSettings(): Promise<GameSetting[]> {
 }
 
 
-
-type GameSettingData = {
+export type GameSettingData = {
   time: number,
   increment: number,
   side: string,
-  userId: string
+  userId: string,
+  path: string
 }
 
-async function createGameSetting(gameSettingData: GameSettingData): Promise<string> {
-  const gameSetting = await gameSettingRepository.create(gameSettingData);
+export type GameSettingParams = Pick<GameSetting, "time" | "increment" | "side" | "userId">;
+
+async function createGameSetting(gameSettingData: GameSettingParams): Promise<string> {
+  const path = uuid();
+  console.log(path)
+  const gameSetting = await gameSettingRepository.create({...gameSettingData, path});
+  return gameSetting.path;
 }
 
 const gameSettingService = {

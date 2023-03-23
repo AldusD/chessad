@@ -20,9 +20,6 @@ export function verifyToken(req: Request, res: Response, next: NextFunction) {
     if (tokenData.type === TokenTypes.access) {
       res.locals.tokenData = tokenData;
       return next();
-    }
-    return res.status(httpStatus.UNAUTHORIZED).send('invalid token');
+    } else return res.status(httpStatus.UNAUTHORIZED).send('invalid token');
   });
-
-  return res.sendStatus(httpStatus.UNAUTHORIZED);
 }
