@@ -20,7 +20,7 @@ export default function GameForm () {
   const requestNewGame = async(gameData) => {
     try {
       const { time: timeString, side } = gameData;
-      const time = timeString.split(' ')[0]
+      const time = timeString.split(' ')[0];
       const increment = timeString.split(' ')[2];
 
       const result = await createGameForm({ time, increment, side });

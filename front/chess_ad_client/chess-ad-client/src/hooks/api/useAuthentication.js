@@ -18,9 +18,36 @@ const register = async (userData) => {
   return data;
 }
 
+const getUserData = async () =>  {
+  const options = { 
+    headers: { 
+      'Content-Type': 'application/json', 
+      Authorization: `Bearer ${localStorage.getItem('accessToken')}` }, 
+      method: 'GET', 
+    };
+
+  const response = await fetch(`${API}/auth/data`, options);
+  const data = response.text();
+  return data;
+}
+
+const getNewTokens = async () =>  {
+  const options = { 
+    headers: { 
+      'Content-Type': 'application/json', 
+      Authorization: `Bearer ${localStorage.getItem('refreshToken')}` }, 
+    method: 'GET',  
+  };
+
+  const response = await fetch(`${API}/auth/token`, options);
+  const data = response.text();
+  console.log('user data', data);
+  return data;
+}
+
 export function useSignin () {
   const { userData, setUserData } = useUser();
-  const navigateToHome = (data, navigate) => {
+  const navigateToHome = (data) => {
     if (data[0] !== '{') return;
     localStorage.setItem("accessToken", JSON.parse(data).token.accessToken);
     localStorage.setItem("refreshToken", JSON.parse(data).token.refreshToken);
@@ -33,4 +60,28 @@ export function useSignin () {
 
 export function useSignup () {
   return useMutation(register);  
+}
+
+export function useUserData () {
+  const { userData, setUserData } = useUser();
+  const { mutate: tryNewTokens } = useNewTokens();
+  
+  const fillUserData = (data) => {
+    if (data[0] !== '{') return; 
+    setUserData({ ...JSON.parse(data).user });
+    return;
+  }
+
+  return useMutation(getUserData, { onSuccess: fillUserData });
+}
+
+export function useNewTokens () {
+  const fillTokens = (data) => {
+    if (data[0] !== '{') return;
+    localStorage.setItem("accessToken", JSON.parse(data).token.accessToken);
+    localStorage.setItem("refreshToken", JSON.parse(data).token.refreshToken);
+    return;
+  }
+
+  return useMutation(getNewTokens, { onSuccess: fillTokens });
 }
