@@ -31,6 +31,10 @@ export const GameHallStyles = styled.div`
   background-color: #00000080;
   border: 4px #E4E4E4 solid;
   border-radius: 1rem;
+
+  a {
+    text-decoration: none;
+  }
 `;
 
 export const GameFormStyles = styled.div`
@@ -139,7 +143,7 @@ export const Game = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height 10vh;
+  height: 10vh;
   background-color: #DDDDDD80;
   margin: 0.4vh 0;
   border-radius: 0.2rem;
@@ -166,6 +170,7 @@ export const Game = styled.div`
     color: black;
     font-size: 1rem;
     font-weight: bold;
+    padding: auto;
   }
 `;
 

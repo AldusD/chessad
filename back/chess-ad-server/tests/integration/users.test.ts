@@ -6,6 +6,7 @@ import app, { init } from "../../src/app";
 import { cleanDb } from "../helpers";
 import { createUser } from "../factories";
 import { prisma } from "../../src/config";
+import { TokenTypes, createToken } from "../../src/utils/token";
 
 beforeAll(async () => {
   await init();
@@ -163,6 +164,35 @@ describe("POST /auth/sign-up", () => {
 
       expect(user.username).toBe(body.username);
       expect(response.status).toBe(httpStatus.CREATED);
+    });
+  });
+})
+
+describe("GET /auth/data", () => {
+  it("should respond with status 401 if no token is given", async () => {
+    const response = await server.get("/auth/data");
+    
+    expect(response.status).toBe(httpStatus.UNAUTHORIZED);
+  });  
+
+  it("should respond with status 401 if given access token is not valid", async () => {
+    const accessToken = faker.lorem.word();
+    const response = await server.get("/auth/data").set("Authorization", `Bearer ${accessToken}`);  
+    
+    expect(response.status).toBe(httpStatus.UNAUTHORIZED);
+  });
+
+  it("should respond with status 200 and corresponding user data", async () => {
+    const user = await createUser();
+    const accessToken = createToken({ userId: user.id, type: TokenTypes.access });  
+    
+    const response = await server.get("/auth/data").set("Authorization", `Bearer ${accessToken}`)
+
+    expect(response.status).toBe(httpStatus.OK);
+    expect(response.body.user).toEqual({
+      username: user.username,
+      email: user.email,
+      profilePicture: user.profilePicture
     });
   });
 })

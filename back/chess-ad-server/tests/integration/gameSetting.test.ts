@@ -27,9 +27,18 @@ describe("GET /game-setting", () => {
       const user = await createUser();
       const gameSetting = await createGameSetting({ userId: user.id });
       const response = await server.get("/game-setting");
-  
+
       expect(response.status).toBe(httpStatus.OK);
-      expect(response.body.games).toEqual([{ ...gameSetting, createdAt: gameSetting.createdAt.toISOString() }]);
+      expect(response.body.games).toEqual([
+        { 
+          ...gameSetting, 
+          createdAt: gameSetting.createdAt.toISOString(), 
+          user: {
+            username: user.username,
+            email: user.email,
+            profilePicture: user.profilePicture
+          }
+        }]);
   }); 
 });
 

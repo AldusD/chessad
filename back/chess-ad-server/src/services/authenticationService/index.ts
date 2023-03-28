@@ -5,7 +5,7 @@ import { createToken, TokenTypes } from "../../utils/token";
 import { encryptPassword, validatePassword } from "./password";
 import { conflictError, invalidCredentialsError, serverError, unauthorizedError } from "./errors";
 
-export async function createUser({ username, email, password }: SignUpParams): Promise<User> {
+async function createUser({ username, email, password }: SignUpParams): Promise<User> {
   await validateUniqueEmail(email);
   await validateUniqueUsername(username);
 
@@ -84,6 +84,11 @@ async function sendNewToken(refreshToken: string): Promise<Tokens> {
     } 
 }
 
+async function sendUserData(userId: string): Promise<Partial<User>> {
+  const user = await authenticationRepository.listUserData(userId); 
+  return user;
+}
+
 type SignInResult = {
   user: Pick<User, "id" | "email">;
   token: string;
@@ -110,6 +115,7 @@ type GetUserByEmailResult = Pick<User, "id" | "username" | "email" | "password" 
 const authenticationService = {
   login,
   createUser,
+  sendUserData,
   sendNewToken
 };
 

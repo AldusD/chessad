@@ -53,3 +53,15 @@ export async function getToken(req: Request, res: Response) {
     return res.status(httpStatus.UNAUTHORIZED).send('refresh token expired or invalid');
   }
 }
+
+export async function getData(req: Request, res: Response) {
+  const { userId } = res.locals.tokenData;
+  
+  try {
+    const result = await authenticationService.sendUserData(userId);
+    return res.status(httpStatus.OK).send({ user: result });
+  } catch (error) {
+    console.log(error);
+    return res.sendStatus(httpStatus.UNAUTHORIZED);
+  }
+}

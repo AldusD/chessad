@@ -1,12 +1,21 @@
+import { Link } from 'react-router-dom';
 import { GameHallStyles, Game, SideBall, Label } from './styles';
 import Guest from '../../../assets/guest.jpg';
+import { useGetGames } from '../../../hooks/api/useGameSetting';
 
 export default function GameHall () {
-    const gamesMock = [
-      { user: 'AldusD', side: 'black', timeControl: [10, 5], profilePicture: '' }, 
-      { user: 'MagnusKe7', side: 'white', timeControl: [10, 5], profilePicture: '' },
-      { user: 'NakaCastle', side: 'random', timeControl: [10, 5], profilePicture: '' }
-    ];
+  const {
+    data: gamesData,
+    isError,
+    isLoading,
+    isFetching
+  } = useGetGames();
+
+  const gamesMock = [
+    { user: 'AldusD', side: 'black', timeControl: [10, 5], profilePicture: '' }, 
+    { user: 'MagnusKe7', side: 'white', timeControl: [10, 5], profilePicture: '' },
+    { user: 'NakaCastle', side: 'random', timeControl: [10, 5], profilePicture: '' }
+  ];
 
   return (
     <GameHallStyles>
@@ -20,18 +29,22 @@ export default function GameHall () {
           </div>
         </Label>
 
-        {gamesMock ? 
-          gamesMock.map((game, i) => 
-            <Game key={`${game.user}${i}`} >
-              <div>
-                <img src={game.profilePicture || Guest} />
-                <span>{game.user}</span>
-              </div>
-              <div>
-                <span>{game.timeControl[0]} + {game.timeControl[1]}</span>
-                <SideBall color={(game.side === 'random' ? '#000' : game.side)} color2={(game.side === 'random' ? '#FFF' : game.side)} />
-              </div>
-            </Game>)
+        {gamesData ? 
+          gamesData.games.map((game, i) => 
+            <Link to={`/games/${game.path}`} >
+              <Game key={`${game.user.username}${i}`} >
+                <div>
+                  <img src={game.profilePicture || Guest} />
+                  <span>{game.user.username}</span>
+                </div>
+                <div>
+                  <span>{game.time} + {game.increment}</span>
+                  <SideBall 
+                    color={(game.side === 'random' ? '#000' : game.side === 'white' ? 'black' : 'white')} 
+                    color2={(game.side === 'random' ? '#FFF' : game.side === 'white' ? 'black' : 'white')} />
+                </div>
+              </Game>
+            </Link>)
         :
         <></>
         }

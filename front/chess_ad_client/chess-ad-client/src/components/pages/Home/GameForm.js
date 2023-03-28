@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { GameFormStyles, CreateForm, SideButton, Options } from "./styles";
 import Form from '../../comons/Form';
 import { FieldError } from '../../comons/styles';
+import { useCreateGame } from '../../../hooks/api/useGameSetting';
 
 export default function GameForm () {
   const [selectedTime, setSelectedTime] = useState(-2);
@@ -11,8 +12,27 @@ export default function GameForm () {
   const timeControls = ['15 + 5', '10 + 5', '10 + 0', '5 + 3', '3 + 2', '3 + 0', '2 + 1', 'Custom'];
   const customIndex = (timeControls.length - 1);
 
+  const {
+    mutate: createGameForm,
+    data: GameData,
+  } = useCreateGame();
+
+  const requestNewGame = async(gameData) => {
+    try {
+      const { time: timeString, side } = gameData;
+      const time = timeString.split(' ')[0]
+      const increment = timeString.split(' ')[2];
+
+      const result = await createGameForm({ time, increment, side });
+    } catch(error) {
+      console.log('err', error);
+    }
+  }
+
   const createGame = () => {
-    const gameData = validateGameOptions();
+    const { data: gameData, error } = validateGameOptions();
+    if (!error) return requestNewGame(gameData);
+    return;    
   }
 
   const validateGameOptions = () => {
@@ -24,10 +44,14 @@ export default function GameForm () {
     if (selectedSide < 0) errors.side = 'Select a side!';    
     if (selectedTime === customIndex) {
       if (!form.time || !form.increment) errors.time = 'Select a time control!';
-      data.time = [form.time, form.increment];
-    }
-    if (errors.side || errors.time) return setErrors(errors);
-    return data;
+      data.time = `${form.time} + ${form.increment}`;
+    } else data.time = timeControls[selectedTime];
+    const sides = [' ', 'white', 'black', 'random'];
+    data.side = sides[selectedSide]
+
+    setErrors(errors);
+    if (errors.side || errors.time) return { error: true };
+    return { data, error: false };
   }
 
   const selectOption = (option, type, setType) => {

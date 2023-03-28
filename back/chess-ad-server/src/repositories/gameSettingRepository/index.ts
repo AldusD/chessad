@@ -3,7 +3,17 @@ import { GameSettingData } from "../../services/gameSettingService";
 
 async function findAll() {
   try {
-    const games = await prisma.gameSetting.findMany();
+    const games = await prisma.gameSetting.findMany({
+      include: {
+        user: {
+          select: {
+            email: true,
+            username: true,
+            profilePicture: true,
+          }
+        }
+      }
+    });
     const filteredGames = games.filter(game => {
       const gameCreationTime = game.createdAt.getTime();
       const timeLimit = Date.now() - (1000 * 60 * 60 * 2);
