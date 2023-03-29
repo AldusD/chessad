@@ -36,7 +36,18 @@ export async function signUp(req: Request, res: Response) {
     
     return res.sendStatus(httpStatus.UNPROCESSABLE_ENTITY);
   }
+}
 
+export async function signOut(req: Request, res: Response) {
+  const { userId } = res.locals.tokenData;
+
+  try {
+    await authenticationService.logout(userId);
+    return res.sendStatus(httpStatus.NO_CONTENT);
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(httpStatus.UNAUTHORIZED);
+  }
 }
 
 export async function getToken(req: Request, res: Response) {

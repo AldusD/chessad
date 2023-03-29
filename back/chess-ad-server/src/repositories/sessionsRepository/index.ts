@@ -39,10 +39,19 @@ async function find(refreshToken: string) {
   })
 }
 
+async function deleteUserSessions(userId: string) {
+  return prisma.session.deleteMany({
+    where: { 
+      userId
+    }
+  })
+}
+
 const sessionRepository = { 
   create,
   updateSession, 
-  find 
+  find,
+  deleteUserSessions
 };
 
 export default sessionRepository;

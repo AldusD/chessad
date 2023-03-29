@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import MainPage from './components/pages/MainPage';
 import HowToPlay from './components/pages/HowToPlay';
 import Home from './components/pages/Home';
+import Game from './components/pages/Game';
 import { GameProvider } from "./contexts/GameContext";
 import { UserProvider } from './contexts/UserContext';
 import { QueryClientProvider, QueryClient } from 'react-query';
@@ -21,6 +22,8 @@ function App() {
             <Route path='/' element={ <MainPage /> } />
             <Route path='/howtoplay' element={ <HowToPlay /> } />
             <Route path='/home' element={ <Home /> } />
+            <Route path="/games/:gameId" element={ <Game action={'waiting'} /> } />
+            <Route path="/games/join/:gameId" element={ <Game action={'joining'} /> } />
             <Route path='*' element={ <span>Not Found :/</span> } />
           </Routes>
         </BrowserRouter>

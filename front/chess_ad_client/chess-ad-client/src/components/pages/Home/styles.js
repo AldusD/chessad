@@ -31,6 +31,18 @@ export const GameHallStyles = styled.div`
   background-color: #00000080;
   border: 4px #E4E4E4 solid;
   border-radius: 1rem;
+  overflow: hidden;
+
+  .games-container {
+    overflow: auto;
+    height: 60vh;
+    border-radius: 1rem;
+
+
+    p {
+      margin-bottom: 1vh;
+    }
+   }
 
   a {
     text-decoration: none;

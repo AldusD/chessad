@@ -4,7 +4,7 @@ import httpStatus from "http-status";
 
 import app, { init } from "../../src/app";
 import { cleanDb } from "../helpers";
-import { createUser } from "../factories";
+import { createUser, createSession } from "../factories";
 import { prisma } from "../../src/config";
 import { TokenTypes, createToken } from "../../src/utils/token";
 
@@ -165,6 +165,34 @@ describe("POST /auth/sign-up", () => {
       expect(user.username).toBe(body.username);
       expect(response.status).toBe(httpStatus.CREATED);
     });
+  });
+})
+
+describe("POST /auth/logout", () => {
+  it("should respond with status 401 if no token is given", async () => {
+    const response = await server.post("/auth/logout");
+    
+    expect(response.status).toBe(httpStatus.UNAUTHORIZED);
+  });  
+
+  it("should respond with status 401 if given access token is not valid", async () => {
+    const accessToken = faker.lorem.word();
+    const response = await server.post("/auth/logout").set("Authorization", `Bearer ${accessToken}`);  
+    
+    expect(response.status).toBe(httpStatus.UNAUTHORIZED);
+  });
+
+  it("should respond with status 204", async () => {
+    const user = await createUser();
+    const refreshToken = createToken({ userId: user.id, type: TokenTypes.refresh });
+    const accessToken = createToken({ userId: user.id, type: TokenTypes.access });  
+    
+    await createSession({ userId: user.id, token: refreshToken });
+    const response = await server.post("/auth/logout").set("Authorization", `Bearer ${accessToken}`);
+    const userSessions = await prisma.session.findMany({ where: { userId: user.id } });
+
+    expect(response.status).toBe(httpStatus.NO_CONTENT);
+    expect(userSessions).toEqual([]);
   });
 })
 

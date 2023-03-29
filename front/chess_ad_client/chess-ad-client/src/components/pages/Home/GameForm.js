@@ -43,6 +43,7 @@ export default function GameForm () {
     if (selectedTime < 0) errors.time = 'Select a time control!';
     if (selectedSide < 0) errors.side = 'Select a side!';    
     if (selectedTime === customIndex) {
+      if (form.time <= 0 || form.increment < 0) errors.time = 'Select a valid time control!';
       if (!form.time || !form.increment) errors.time = 'Select a time control!';
       data.time = `${form.time} + ${form.increment}`;
     } else data.time = timeControls[selectedTime];

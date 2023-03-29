@@ -46,6 +46,10 @@ async function login(params: SignInParams): Promise<LoginResult> {
   return { token: tokens, user: { username: user.username, email: user.email, profilePicture: user.profilePicture } };
 }
 
+async function logout(userId: string) {
+  return sessionRepository.deleteUserSessions(userId);
+}
+
 async function getUserByEmail(email: string): Promise<GetUserByEmailResult> {
   const user = await authenticationRepository.findByEmail(email);
   if (!user) throw invalidCredentialsError();
@@ -115,6 +119,7 @@ type GetUserByEmailResult = Pick<User, "id" | "username" | "email" | "password" 
 const authenticationService = {
   login,
   createUser,
+  logout,
   sendUserData,
   sendNewToken
 };

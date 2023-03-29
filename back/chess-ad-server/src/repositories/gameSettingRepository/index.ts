@@ -12,7 +12,10 @@ async function findAll() {
             profilePicture: true,
           }
         }
-      }
+      },
+      orderBy: [
+        { createdAt: 'desc' }
+      ]
     });
     const filteredGames = games.filter(game => {
       const gameCreationTime = game.createdAt.getTime();
