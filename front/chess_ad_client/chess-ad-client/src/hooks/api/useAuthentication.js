@@ -18,6 +18,19 @@ const register = async (userData) => {
   return data;
 }
 
+const logout = async () => {
+  const options = { 
+    headers: { 
+      'Content-Type': 'application/json', 
+      Authorization: `Bearer ${localStorage.getItem('accessToken')}` }, 
+      method: 'POST', 
+    };
+
+  const response = await fetch(`${API}/auth/logout`, options);
+  const data = response.text();
+  return data;
+}
+
 const getUserData = async () =>  {
   const options = { 
     headers: { 
@@ -60,6 +73,16 @@ export function useSignin () {
 
 export function useSignup () {
   return useMutation(register);  
+}
+
+export function useLogout () {
+  const clearStorage = (data) => {
+    localStorage.setItem("accessToken", '');
+    localStorage.setItem("refreshToken",'');
+    return;
+  }
+
+  return useMutation(logout, { onSuccess: clearStorage });
 }
 
 export function useUserData () {

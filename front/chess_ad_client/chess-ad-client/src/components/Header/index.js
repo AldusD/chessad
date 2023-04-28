@@ -3,7 +3,7 @@ import Logo from "../../assets/logo.jpg"
 import { Link, useNavigate } from 'react-router-dom';
 import { useUser } from '../../contexts/UserContext';
 import { useEffect } from 'react';
-import { useNewTokens, useUserData } from '../../hooks/api/useAuthentication';
+import { useLogout, useNewTokens, useUserData } from '../../hooks/api/useAuthentication';
 
 export default function Header () {
   const { userData, setUserData } = useUser();
@@ -15,11 +15,20 @@ export default function Header () {
     mutate: requestTokens,
     data: newTokensData
   } = useNewTokens();
+  const {
+    mutate: requestLogout,
+    data: logoutData
+  } = useLogout();
 
   const navigate = useNavigate()
 
   const fillUserData = async () => {
     await requestUserData();
+  }
+
+  const logout = async () => {
+    await requestLogout();
+    navigate('/');
   }
 
   useEffect(() => {
@@ -49,7 +58,7 @@ export default function Header () {
             <Link to='/howtoplay' ><Item>How to play</Item></Link> 
             <Item>Contact</Item>
           </div>
-          <Item>Logout</Item>
+          <Item onClick={logout} >Logout</Item>
         </div>
       </HeaderStyles>
   )

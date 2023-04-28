@@ -6,10 +6,22 @@ import gameSettingService, { GameSettingParams } from "../services/gameSettingSe
 export async function getGameSettings(req: Request, res: Response) {
   try {
     const result = await gameSettingService.listGameSettings();
-    
+    console.log(result)
     return res.status(httpStatus.OK).send({ games: result });
   } catch (error) {
     return res.sendStatus(httpStatus.BAD_REQUEST);
+  }
+}
+
+export async function getGameSetting(req: Request, res: Response) {
+  const { path } = req.params;
+
+  try {
+    const result = await gameSettingService.listGameSettingByPath(path);
+    return res.status(httpStatus.OK).send({ game: result });
+  } catch (error) {
+    if (error.name === 'invalidPath') return res.send(error.message).status(httpStatus.GONE);
+    return res.sendStatus(httpStatus.GONE);
   }
 }
 
@@ -22,8 +34,7 @@ export async function postGameSetting(req: Request, res: Response) {
     const result = await gameSettingService.createGameSetting(data);
     return res.status(httpStatus.CREATED).send({ path: result });
   } catch (error) {
-    console.log(error)
-    // if (error.name === "")    
+    console.log(error)  
     return res.sendStatus(httpStatus.UNPROCESSABLE_ENTITY);
   }
 }

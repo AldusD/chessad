@@ -100,3 +100,29 @@ describe("POST /game-setting", () => {
     });
   });
 });
+
+describe("GET /game-setting/:path", () => {
+  it("should respond with status 410 if there is no active game setting for this path", async () => {
+      const invalidPath = faker.lorem.word();
+      const response = await server.get(`/game-setting/${invalidPath}`);
+      expect(response.status).toBe(httpStatus.GONE);
+  }); 
+
+  it("should respond with status 200 and the correspondent data", async () => {
+      const user = await createUser();
+      const gameSetting = await createGameSetting({ userId: user.id });
+      const response = await server.get(`/game-setting/${gameSetting.path}`);
+
+      expect(response.status).toBe(httpStatus.OK);
+      expect(response.body.game).toEqual(
+        { 
+          ...gameSetting, 
+          createdAt: gameSetting.createdAt.toISOString(), 
+          user: {
+            username: user.username,
+            email: user.email,
+            profilePicture: user.profilePicture
+          }
+        });
+  }); 
+});

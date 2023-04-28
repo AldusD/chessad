@@ -24,7 +24,7 @@ export default function GameHall () {
         </Label>
         <div className='games-container'>
           {gamesData ? 
-            gamesData.games.map((game, i) => 
+            gamesData.games?.map((game, i) => 
               <Link to={`/games/join/${game.path}`} >
                 <Game key={`${game.user.username}${i}`} >
                   <div>

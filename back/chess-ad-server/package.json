@@ -49,6 +49,7 @@
   "dependencies": {
     "@prisma/client": "^3.14.0",
     "@types/axios": "^0.14.0",
+    "@types/socket.io": "^3.0.2",
     "axios": "^1.2.2",
     "bcrypt": "^5.0.1",
     "cors": "^2.8.5",
@@ -60,6 +61,7 @@
     "joi": "^17.6.0",
     "jsonwebtoken": "^8.5.1",
     "reflect-metadata": "^0.1.13",
+    "socket.io": "^4.6.1",
     "uuid": "^9.0.0"
   }
 }
