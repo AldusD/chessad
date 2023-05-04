@@ -1,19 +1,19 @@
 import { io } from "socket.io-client";
-import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { useGetGameByPath } from "../../../hooks/api/useGameSetting";
 import { useGame } from "../../../contexts/GameContext";
 import Header from "../../Header";
-import { WaitingRoomStyles } from "./styles";
 import Guest from '../../../assets/guest.jpg';
 import LoadingQueen from '../../../assets/loading-queen.png';
+import { WaitingRoomStyles } from "./styles";
 import { Loading } from "../../comons/styles";
-import { useEffect } from "react";
-
 export default function WaitingRoom() {
   const { gameSettings } = useGame();
   const API = process.env.REACT_APP_API_BASE_URL;
   const gamePath = useParams().gamePath;
-  //const socket = io(API);
+  const navigate = useNavigate();
+  const socket = io.connect(API);
 
   const {
     mutate: getGameSettings,
@@ -22,10 +22,15 @@ export default function WaitingRoom() {
 
   useEffect(() => {
     getGameSettings(gamePath);
-    //socket.on("connect", () => {
-      //console.log('client-side', socket.id); 
-    //});
+    socket.emit("join_game", { path: gamePath });
   }, [])
+
+  useEffect(() => {
+    socket.on("join", (message) => {
+      console.log('redirect')
+      navigate('/games/play/' + gamePath);
+    });
+  }, [socket])
   
   return (
     <WaitingRoomStyles>

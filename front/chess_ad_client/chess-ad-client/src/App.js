@@ -24,6 +24,7 @@ function App() {
             <Route path='/howtoplay' element={ <HowToPlay /> } />
             <Route path='/home' element={ <Home /> } />
             <Route path="/games/join/:gamePath" element={ <WaitingRoom /> } />
+            <Route path="/games/play/:gamePath" element={ <Game /> } />
             <Route path='*' element={ <span>Not Found :/</span> } />
           </Routes>
         </BrowserRouter>

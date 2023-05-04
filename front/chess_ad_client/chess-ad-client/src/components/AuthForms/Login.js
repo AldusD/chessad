@@ -20,7 +20,7 @@ export default function Login({ setSelectedForm }) {
         confirmation: '', 
         error: false 
     });
-    const navigate = useNavigate()
+    const navigate = useNavigate();
     const updateForm = e => setForm({ ...form, [e.target.name]: e.target.value});
     const { 
         mutate: signinForm, 

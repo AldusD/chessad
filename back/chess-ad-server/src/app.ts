@@ -3,8 +3,9 @@ import "express-async-errors";
 import express, { Express } from "express";
 import cors from "cors";
 import http from  "http";
-import { Server } from "socket.io";
+import { Server, Socket } from "socket.io";
 
+import connectServices from "./sockets";
 import { loadEnv, connectDb, disconnectDB, prisma } from "./config";
 import { authenticationRouter, gameSettingRouter } from "./routers";
 
@@ -19,11 +20,10 @@ app
   .use("/game-setting/", gameSettingRouter);
 
 const httpServer = http.createServer(app);
-const io = new Server(httpServer, { path: '/socket.io' }); 
 
-io.on("connection", (socket) => {
-  console.log('server-side', socket.id);
-});
+const io = new Server(httpServer, { cors: { origin: process.env.FRONTEND_URL, methods: ['GET', 'POST'] } });
+const onConnection = (socket: Socket) => connectServices(io, socket);
+io.on("connection", onConnection);
 
 export function init(): Promise<Express> {
   connectDb();
