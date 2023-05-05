@@ -8,6 +8,7 @@ import Game from './components/pages/Game';
 import WaitingRoom from './components/pages/WaitingRoom';
 import { GameProvider } from "./contexts/GameContext";
 import { UserProvider } from './contexts/UserContext';
+import { SocketProvider } from './contexts/SocketContext';
 import { QueryClientProvider, QueryClient } from 'react-query';
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
       <QueryClientProvider client={queryClient} >
       <UserProvider>
       <GameProvider>
+      <SocketProvider>
         <BrowserRouter >
           <Routes>
             <Route path='/' element={ <MainPage /> } />
@@ -28,6 +30,7 @@ function App() {
             <Route path='*' element={ <span>Not Found :/</span> } />
           </Routes>
         </BrowserRouter>
+      </SocketProvider>
       </GameProvider>
       </UserProvider>
       </QueryClientProvider>

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useGetGameByPath } from "../../../hooks/api/useGameSetting";
 import { useGame } from "../../../contexts/GameContext";
+import { useSocket } from "../../../contexts/SocketContext";
 import Header from "../../Header";
 import Guest from '../../../assets/guest.jpg';
 import LoadingQueen from '../../../assets/loading-queen.png';
@@ -13,7 +14,8 @@ export default function WaitingRoom() {
   const API = process.env.REACT_APP_API_BASE_URL;
   const gamePath = useParams().gamePath;
   const navigate = useNavigate();
-  const socket = io.connect(API);
+  // const socket = io.connect(API);
+  const { socket } = useSocket();
 
   const {
     mutate: getGameSettings,
@@ -27,7 +29,7 @@ export default function WaitingRoom() {
 
   useEffect(() => {
     socket.on("join", (message) => {
-      console.log('redirect')
+      console.log('join')
       navigate('/games/play/' + gamePath);
     });
   }, [socket])
