@@ -4,11 +4,13 @@ import gameSettingRepository from "../../repositories/gameSettingRepository";
 import { invalidPath } from './errors';
 
 async function listGameSettings(): Promise<GameSetting[]> {
+  await gameSettingRepository.deleteExpired();
   const games = await gameSettingRepository.findAll();
   return games;
 }
 
 async function listGameSettingByPath(path: string): Promise<GameSetting> {
+  await gameSettingRepository.deleteExpired();
   const game = await gameSettingRepository.findByPath(path);
   if (!game.id) throw invalidPath();
   return game;

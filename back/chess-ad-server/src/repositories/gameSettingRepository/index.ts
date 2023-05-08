@@ -1,32 +1,36 @@
 import { prisma } from "../../config";
 import { GameSettingData } from "../../services/gameSettingService";
 
-async function findAll() {
-  try {
-    const games = await prisma.gameSetting.findMany({
-      include: {
-        user: {
-          select: {
-            email: true,
-            username: true,
-            profilePicture: true,
-          }
-        }
-      },
-      orderBy: [
-        { createdAt: 'desc' }
-      ]
-    });
-    const filteredGames = games.filter(game => {
-      const gameCreationTime = game.createdAt.getTime();
-      const timeLimit = Date.now() - (1000 * 60 * 60 * 2);
-      return gameCreationTime > timeLimit;
-    })
+const TIME_TO_FADE = 1000 * 60 * 60 * 2;
 
-    return filteredGames;
-  } catch (error) {
-    console.log(error);
-  }  
+async function deleteExpired() {
+  const expireTimeStamp = Date.now() - TIME_TO_FADE; 
+  const expireDate = new Date(expireTimeStamp);
+  
+  return prisma.gameSetting.deleteMany({
+      where: {
+        createdAt: {
+          lte: expireDate
+        }
+      }
+    });
+}
+
+async function findAll() {
+  return prisma.gameSetting.findMany({
+    include: {
+      user: {
+        select: {
+          email: true,
+          username: true,
+          profilePicture: true,
+        }
+      }
+    },
+    orderBy: [
+      { createdAt: 'desc' }
+    ]
+  });  
 };
 
 async function findByPath(path: string) {
@@ -65,7 +69,8 @@ async function create(gameSettingData: GameSettingData) {
 const gameSettingRepository = {
   findAll,
   findByPath,
-  create
+  create,
+  deleteExpired
 };
 
 export default gameSettingRepository;

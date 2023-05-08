@@ -21,6 +21,16 @@ describe("GET /game-setting", () => {
   
       expect(response.status).toBe(httpStatus.OK);
       expect(response.body.games).toEqual([]);
+  });
+
+  it("should respond with status 200 and an empty array (expired game settings)", async () => {
+    const user = await createUser();
+    const expiredDate = new Date(Date.now() - (1000 * 60 * 60 * 10));
+    const gameSetting = await createGameSetting({ userId: user.id, createdAt: expiredDate });
+    const response = await server.get("/game-setting");
+
+    expect(response.status).toBe(httpStatus.OK);
+    expect(response.body.games).toEqual([]);
   }); 
 
   it("should respond with status 200 and the correspondent data", async () => {

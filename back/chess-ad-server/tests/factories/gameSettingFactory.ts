@@ -9,6 +9,8 @@ export async function createGameSetting(params: Partial<GameSetting> = {}): Prom
   const side = params.side || sides[Math.floor(Math.random() * 3)];
   const userId = params.userId;
   const path = params.path || faker.internet.password();
+  const createdAt = params.createdAt || new Date(Date.now());
+
   
   try {
     const gameSetting = await prisma.gameSetting.create({
@@ -17,7 +19,8 @@ export async function createGameSetting(params: Partial<GameSetting> = {}): Prom
         userId,
         side,
         increment,
-        time
+        time,
+        createdAt
       },
     });
     return gameSetting; 
