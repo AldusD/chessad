@@ -40,7 +40,12 @@ const createGame = async (gameData) => {
 }
 
 export function useCreateGame () {
-  return useMutation(createGame);  
+  const savePlaterToken = (data) => {
+    if (data[0] !== '{') return;
+    return localStorage.setItem("playerToken", JSON.parse(data).playerToken);
+  }
+
+  return useMutation(createGame, { onSuccess: savePlaterToken });  
 }
 
 export function useGetGames () {

@@ -32,7 +32,7 @@ export async function postGameSetting(req: Request, res: Response) {
 
   try {
     const result = await gameSettingService.createGameSetting(data);
-    return res.status(httpStatus.CREATED).send({ path: result });
+    return res.status(httpStatus.CREATED).send({ path: result.path, playerToken: result.playerToken });
   } catch (error) {
     console.log(error)  
     return res.sendStatus(httpStatus.UNPROCESSABLE_ENTITY);

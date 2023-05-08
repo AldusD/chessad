@@ -1,6 +1,7 @@
 import { v4 as uuid } from 'uuid';
 import { GameSetting } from "@prisma/client";
 import gameSettingRepository from "../../repositories/gameSettingRepository";
+import { createToken, PlayerTokenTypes } from "../../utils/token";
 import { invalidPath } from './errors';
 
 async function listGameSettings(): Promise<GameSetting[]> {
@@ -26,10 +27,16 @@ export type GameSettingData = {
 
 export type GameSettingParams = Pick<GameSetting, "time" | "increment" | "side" | "userId">;
 
-async function createGameSetting(gameSettingData: GameSettingParams): Promise<string> {
+export type CreateGameSettingResponse = {
+  path: string,
+  playerToken: string
+}
+
+async function createGameSetting(gameSettingData: GameSettingParams): Promise<CreateGameSettingResponse> {
   const path = uuid();
+  const playerToken = createToken({ type: PlayerTokenTypes.creatorPlayer, path }, '10d');
   const gameSetting = await gameSettingRepository.create({...gameSettingData, path});
-  return gameSetting.path;
+  return { path: gameSetting.path, playerToken };
 }
 
 const gameSettingService = {

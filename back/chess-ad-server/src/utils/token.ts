@@ -8,16 +8,27 @@ enum TokenTypes {
   refresh  
 }
 
-type TokenData = {
-    userId: string,
-    type: TokenTypes     
+enum PlayerTokenTypes {
+  creatorPlayer,
+  joiningPlayer
 }
 
-function createToken(payload: TokenData, expiration?: string | number) {
+type TokenData = {
+  userId: string,
+  type: TokenTypes     
+}
+
+type PlayerTokenData = {
+  path: string,
+  type: PlayerTokenTypes
+
+}
+
+function createToken(payload: TokenData | PlayerTokenData, expiration?: string | number) {
   const expiresIn = expiration || '1h'; 
   return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn });
 }
 
 const getTokenDataOrFail = (token: string, callback: any) => jwt.verify(token, process.env.JWT_SECRET, callback);
 
-export { createToken, getTokenDataOrFail, TokenTypes, TokenData };
+export { createToken, getTokenDataOrFail, TokenTypes, TokenData, PlayerTokenTypes, PlayerTokenData };

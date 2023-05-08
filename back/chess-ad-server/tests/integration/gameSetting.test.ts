@@ -106,6 +106,7 @@ describe("POST /game-setting", () => {
   
         expect(response.status).toBe(httpStatus.CREATED);
         expect(typeof(response.body.path)).toBe('string');
+        expect(typeof(response.body.playerToken)).toBe('string');
       });
     });
   });
