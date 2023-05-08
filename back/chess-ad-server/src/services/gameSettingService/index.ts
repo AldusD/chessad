@@ -3,6 +3,7 @@ import { GameSetting } from "@prisma/client";
 import gameSettingRepository from "../../repositories/gameSettingRepository";
 import { createToken, PlayerTokenTypes } from "../../utils/token";
 import { invalidPath } from './errors';
+import gameService from '../gameService';
 
 async function listGameSettings(): Promise<GameSetting[]> {
   await gameSettingRepository.deleteExpired();
@@ -39,10 +40,25 @@ async function createGameSetting(gameSettingData: GameSettingParams): Promise<Cr
   return { path: gameSetting.path, playerToken };
 }
 
+export type JoiningData = {
+  userId: string,
+  path: string
+}
+
+async function joinGame(joiningData: JoiningData): Promise<string> {
+  const { userId, path } = joiningData;
+  const gameSetting = await gameSettingRepository.findByPath(path);
+  if (path)
+  await gameService.createGame({ gameSettingData: gameSetting, joinedUserId: userId });
+  await gameSettingRepository.deleteByPath(path);
+  return ''
+}
+
 const gameSettingService = {
   listGameSettings,
   listGameSettingByPath,
-  createGameSetting
+  createGameSetting,
+  joinGame
 }
 
 export default gameSettingService;

@@ -14,7 +14,6 @@ export default function WaitingRoom() {
   const API = process.env.REACT_APP_API_BASE_URL;
   const gamePath = useParams().gamePath;
   const navigate = useNavigate();
-  // const socket = io.connect(API);
   const { socket } = useSocket();
 
   const {

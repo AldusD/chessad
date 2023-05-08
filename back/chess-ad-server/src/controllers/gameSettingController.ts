@@ -27,12 +27,24 @@ export async function getGameSetting(req: Request, res: Response) {
 
 export async function postGameSetting(req: Request, res: Response) {
   const { time, increment, side } = req.body;
-  const { userId }= res.locals.tokenData;
+  const { userId } = res.locals.tokenData;
   const data: GameSettingParams = { time: Number(time), increment: Number(increment), side, userId };
 
   try {
     const result = await gameSettingService.createGameSetting(data);
     return res.status(httpStatus.CREATED).send({ path: result.path, playerToken: result.playerToken });
+  } catch (error) {
+    console.log(error)  
+    return res.sendStatus(httpStatus.UNPROCESSABLE_ENTITY);
+  }
+}
+
+export async function postJoinGame(req: Request, res: Response) {
+  const { path } = req.params;
+  const { userId } = res.locals.tokenData;
+  try {
+    const result = await gameSettingService.joinGame({ path, userId });
+    return res.status(httpStatus.CREATED).send({ playerToken: result });
   } catch (error) {
     console.log(error)  
     return res.sendStatus(httpStatus.UNPROCESSABLE_ENTITY);

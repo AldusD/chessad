@@ -3,6 +3,10 @@ import { GameSettingData } from "../../services/gameSettingService";
 
 const TIME_TO_FADE = 1000 * 60 * 60 * 2;
 
+async function deleteByPath(path: string) {
+  return prisma.gameSetting.deleteMany({ where: { path } });
+}
+
 async function deleteExpired() {
   const expireTimeStamp = Date.now() - TIME_TO_FADE; 
   const expireDate = new Date(expireTimeStamp);
@@ -70,7 +74,8 @@ const gameSettingRepository = {
   findAll,
   findByPath,
   create,
-  deleteExpired
+  deleteExpired,
+  deleteByPath
 };
 
 export default gameSettingRepository;

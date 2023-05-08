@@ -5,7 +5,6 @@ import httpStatus from "http-status";
 import app, { init } from "../../src/app";
 import { cleanDb } from "../helpers";
 import { createUser, createSession } from "../factories";
-import { prisma } from "../../src/config";
 import { createToken, TokenTypes } from "../../src/utils/token";
 
 beforeAll(async () => {

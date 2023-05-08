@@ -4,8 +4,7 @@ import httpStatus from "http-status";
 
 import app, { init } from "../../src/app";
 import { cleanDb } from "../helpers";
-import { createUser, createSession, createGameSetting } from "../factories";
-import { prisma } from "../../src/config";
+import { createUser, createGameSetting } from "../factories";
 import { createToken, TokenTypes } from "../../src/utils/token";
 
 beforeAll(async () => {
@@ -96,7 +95,7 @@ describe("POST /game-setting", () => {
         }
       };
   
-      it("should respond with status 201", async () => {
+      it("should respond with status 201 and corresponding data", async () => {
         const user = await createUser();
         const body = generateValidBody();
         const accessToken = createToken({ userId: user.id, type: TokenTypes.access });  
