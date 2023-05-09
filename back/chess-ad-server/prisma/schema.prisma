@@ -44,10 +44,12 @@ model GameSetting {
 
 model Game {
   id            String    @id @default(auto()) @map("_id") @db.ObjectId
-  result        String 
-  pgn           String
+  result        String? 
+  pgn           String?
   path          String    @unique
   isOpen        Boolean   @default(true)
+  time          Int
+  increment     Int
   createdAt     DateTime  @default(now())
   whitePlayer   User      @relation("AsWhite", fields: [whitePlayerId], references: [id])
   whitePlayerId String    @db.ObjectId

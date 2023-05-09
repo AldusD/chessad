@@ -30,6 +30,14 @@ describe("POST /game/join", () => {
   });
   
   describe("when token is valid", () => {
+    it("should respond with status 422 if no path given", async () => {
+      const user = await createUser();
+      const accessToken = createToken({ userId: user.id, type: TokenTypes.access });
+      const response = await server.post(`/game/join`).set("Authorization", `Bearer ${accessToken}`);
+      
+      expect(response.status).toBe(httpStatus.UNPROCESSABLE_ENTITY);
+    }); 
+
     it("should respond with status 410 if there is no active game setting for path given", async () => {
       const user = await createUser();
       const accessToken = createToken({ userId: user.id, type: TokenTypes.access });

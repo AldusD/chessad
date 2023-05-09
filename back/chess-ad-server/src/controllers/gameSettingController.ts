@@ -38,15 +38,3 @@ export async function postGameSetting(req: Request, res: Response) {
     return res.sendStatus(httpStatus.UNPROCESSABLE_ENTITY);
   }
 }
-
-export async function postJoinGame(req: Request, res: Response) {
-  const { path } = req.params;
-  const { userId } = res.locals.tokenData;
-  try {
-    const result = await gameSettingService.joinGame({ path, userId });
-    return res.status(httpStatus.CREATED).send({ playerToken: result });
-  } catch (error) {
-    console.log(error)  
-    return res.sendStatus(httpStatus.UNPROCESSABLE_ENTITY);
-  }
-}

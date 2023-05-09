@@ -40,25 +40,10 @@ async function createGameSetting(gameSettingData: GameSettingParams): Promise<Cr
   return { path: gameSetting.path, playerToken };
 }
 
-export type JoiningData = {
-  userId: string,
-  path: string
-}
-
-async function joinGame(joiningData: JoiningData): Promise<string> {
-  const { userId, path } = joiningData;
-  const gameSetting = await gameSettingRepository.findByPath(path);
-  if (path)
-  await gameService.createGame({ gameSettingData: gameSetting, joinedUserId: userId });
-  await gameSettingRepository.deleteByPath(path);
-  return ''
-}
-
 const gameSettingService = {
   listGameSettings,
   listGameSettingByPath,
-  createGameSetting,
-  joinGame
+  createGameSetting
 }
 
 export default gameSettingService;

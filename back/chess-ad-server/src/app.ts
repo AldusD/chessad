@@ -8,7 +8,7 @@ import { instrument } from '@socket.io/admin-ui'
 
 import connectServices from "./sockets";
 import { loadEnv, connectDb, disconnectDB, prisma } from "./config";
-import { authenticationRouter, gameSettingRouter } from "./routers";
+import { authenticationRouter, gameSettingRouter, gameRouter } from "./routers";
 
 loadEnv();
 
@@ -18,7 +18,8 @@ app
   .use(express.json())
   .get("/health", (_req, res) => res.send("1.e4!"))
   .use("/auth", authenticationRouter)
-  .use("/game-setting/", gameSettingRouter);
+  .use("/game-setting/", gameSettingRouter)
+  .use("/game/", gameRouter);
 
 const httpServer = http.createServer(app);
 
