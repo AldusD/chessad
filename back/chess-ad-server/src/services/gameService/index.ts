@@ -1,7 +1,7 @@
 import { Game, GameSetting } from "@prisma/client";
 import gameSettingRepository from "../../repositories/gameSettingRepository";
 import gameRepository from "../../repositories/gameRepository";
-import { cannotJoinGameError, invalidPathError } from "../errors";
+import { cannotJoinGameError, invalidPathError, unprocessableEntityError } from "../errors";
 import { PlayerTokenTypes, createToken } from "../../utils/token";
 
 type CreateGameParams = {
@@ -12,7 +12,7 @@ type CreateGameParams = {
 async function createGame(createGameParams: CreateGameParams) {
   const { path, userId } = createGameParams;
 
-  if (!path) throw invalidPathError();
+  if (!path) throw unprocessableEntityError('Path is required');
   
   const gameSetting = await gameSettingRepository.findByPath(path);
   if (!gameSetting) throw invalidPathError();

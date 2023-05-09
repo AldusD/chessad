@@ -12,6 +12,10 @@ export async function postJoinGame(req: Request, res: Response) {
     const result = await gameService.createGame({ path, userId });
     return res.status(httpStatus.CREATED).send({ playerToken: result });
   } catch (error) {
+    if (error.name === Errors.unprocessableEntityError) {
+      return res.status(httpStatus.UNPROCESSABLE_ENTITY).send(error.message);  
+    }
+
     if (error.name === Errors.invalidPathError) {
       return res.status(httpStatus.GONE).send(error.message);  
     }

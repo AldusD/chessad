@@ -6,13 +6,14 @@ export enum Errors {
   invalidCredentialsError,
   serverError,
   unauthorizedError,
-  cannotJoinGameError
+  cannotJoinGameError,
+  unprocessableEntityError
 }
 
 export function invalidPathError(): ApplicationError {
   return {
     name: Errors.invalidPathError,
-    message: "This path does no longer correspond to an active gameSetting"
+    message: "This path does not correspond to an active gameSetting"
   };
 }
 
@@ -50,3 +51,10 @@ export function cannotJoinGameError(message?: string): ApplicationError {
     message: message || 'User can not join this game',
   };
 }
+
+export function unprocessableEntityError(message?: string): ApplicationError {
+    return {
+      name: Errors.unprocessableEntityError,
+      message: message || 'invalid data',
+    };
+  }

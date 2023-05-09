@@ -1,4 +1,4 @@
-import { verifyToken } from "@/middlewares";
+import { verifyToken } from "../middlewares";
 import { postJoinGame } from "../controllers";
 import { Router, Response } from "express";
 

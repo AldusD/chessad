@@ -5,7 +5,7 @@ import httpStatus from "http-status";
 import app, { init } from "../../src/app";
 import { prisma } from "../../src/config";
 import { cleanDb } from "../helpers";
-import { createUser, createGameSetting } from "../factories";
+import { createUser, createGameSetting, createGame } from "../factories";
 import { createToken, TokenTypes } from "../../src/utils/token";
 
 beforeAll(async () => {
@@ -70,7 +70,7 @@ describe("POST /game/join", () => {
           .set("Authorization", `Bearer ${accessToken}`)
           .send({ path: gameSetting.path });
 
-        const checkGameSetting = await prisma.game.findUnique({ where: { path: gameSetting.path } });
+        const checkGameSetting = await prisma.gameSetting.findUnique({ where: { path: gameSetting.path } });
         
         expect(checkGameSetting).toBeNull();
         expect(response.status).toBe(httpStatus.CREATED);
@@ -78,5 +78,41 @@ describe("POST /game/join", () => {
       }); 
     })
   });
+});
+
+describe("GET /game/:path", () => {
+  it("should respond with status 404 if there is no game for path given", async () => {
+    const invalidPath = faker.lorem.word();
+    const response = await server.get(`/game/${invalidPath}`);
+    
+    expect(response.status).toBe(httpStatus.NOT_FOUND);
+  }); 
+
+  it("should respond with status 200 and corresponding data", async () => {
+    const whitePlayer = await createUser();
+    const blackPlayer = await createUser();
+    const whitePlayerId = whitePlayer.id;
+    const blackPlayerId = blackPlayer.id;
+    const game = await createGame({ whitePlayerId, blackPlayerId });
+    const response = await server.get(`/game/${game.path}`);
+    
+    expect(response.status).toBe(httpStatus.OK);
+    expect(response.body.game).toEqual(
+      { 
+        ...game, 
+        createdAt: game.createdAt.toISOString(), 
+        whitePlayer: {
+          username: whitePlayer.username,
+          email: whitePlayer.email,
+          profilePicture: whitePlayer.profilePicture
+        },
+        blackPlayer: {
+          username: blackPlayer.username,
+          email: blackPlayer.email,
+          profilePicture: blackPlayer.profilePicture
+        }
+      });
+  }); 
+
 });
   
