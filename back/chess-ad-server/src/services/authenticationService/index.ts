@@ -3,7 +3,7 @@ import sessionRepository from "../../repositories/sessionsRepository";
 import authenticationRepository from "../../repositories/authenticationRepository";
 import { createToken, TokenTypes } from "../../utils/token";
 import { encryptPassword, validatePassword } from "./password";
-import { conflictError, invalidCredentialsError, serverError, unauthorizedError } from "./errors";
+import { conflictError, invalidCredentialsError, serverError, unauthorizedError } from "../errors";
 
 async function createUser({ username, email, password }: SignUpParams): Promise<User> {
   await validateUniqueEmail(email);
@@ -127,4 +127,3 @@ const authenticationService = {
 export default authenticationService;
 export type SignUpParams = Pick<User, "email" | "password" | "username">;
 export type SignInParams = Pick<User, "email" | "password">;
-export * from "./errors";

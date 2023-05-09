@@ -2,7 +2,7 @@ import { v4 as uuid } from 'uuid';
 import { GameSetting } from "@prisma/client";
 import gameSettingRepository from "../../repositories/gameSettingRepository";
 import { createToken, PlayerTokenTypes } from "../../utils/token";
-import { invalidPath } from './errors';
+import { invalidPathError } from '../errors';
 import gameService from '../gameService';
 
 async function listGameSettings(): Promise<GameSetting[]> {
@@ -14,7 +14,7 @@ async function listGameSettings(): Promise<GameSetting[]> {
 async function listGameSettingByPath(path: string): Promise<GameSetting> {
   await gameSettingRepository.deleteExpired();
   const game = await gameSettingRepository.findByPath(path);
-  if (!game.id) throw invalidPath();
+  if (!game.id) throw invalidPathError();
   return game;
 }
 

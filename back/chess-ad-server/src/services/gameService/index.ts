@@ -1,6 +1,7 @@
 import { Game, GameSetting } from "@prisma/client";
 import gameSettingRepository from "../../repositories/gameSettingRepository";
 import gameRepository from "../../repositories/gameRepository";
+import { cannotJoinGameError, invalidPathError } from "../errors";
 import { PlayerTokenTypes, createToken } from "../../utils/token";
 
 type CreateGameParams = {
@@ -11,9 +12,15 @@ type CreateGameParams = {
 async function createGame(createGameParams: CreateGameParams) {
   const { path, userId } = createGameParams;
 
+  if (!path) throw invalidPathError();
+  
   const gameSetting = await gameSettingRepository.findByPath(path);
+  if (!gameSetting) throw invalidPathError();
+  if (userId === gameSetting.userId) throw cannotJoinGameError('User can not join its own game');
+  
   const { time, increment, side } = gameSetting;
   const teams = setPlayersTeams({ creatorUserId: gameSetting.userId, joiningUserId: userId, side });
+
 
   const game = await gameRepository.create({ path, time, increment, whitePlayerId: teams[0], blackPlayerId: teams[1] });
   await gameSettingRepository.deleteByPath(path);

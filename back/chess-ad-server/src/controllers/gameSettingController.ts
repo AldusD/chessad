@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import httpStatus from "http-status";
 
+import { Errors } from "../services/errors";
 import gameSettingService, { GameSettingParams } from "../services/gameSettingService";
 
 export async function getGameSettings(req: Request, res: Response) {
@@ -20,7 +21,7 @@ export async function getGameSetting(req: Request, res: Response) {
     const result = await gameSettingService.listGameSettingByPath(path);
     return res.status(httpStatus.OK).send({ game: result });
   } catch (error) {
-    if (error.name === 'invalidPath') return res.send(error.message).status(httpStatus.GONE);
+    if (error.name === Errors.invalidPathError) return res.send(error.message).status(httpStatus.GONE);
     return res.sendStatus(httpStatus.GONE);
   }
 }
@@ -34,7 +35,6 @@ export async function postGameSetting(req: Request, res: Response) {
     const result = await gameSettingService.createGameSetting(data);
     return res.status(httpStatus.CREATED).send({ path: result.path, playerToken: result.playerToken });
   } catch (error) {
-    console.log(error)  
     return res.sendStatus(httpStatus.UNPROCESSABLE_ENTITY);
   }
 }

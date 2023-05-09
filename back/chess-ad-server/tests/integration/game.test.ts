@@ -50,7 +50,7 @@ describe("POST /game/join", () => {
     }); 
 
     describe("when body is valid", () => {
-      it("should respond with status 401 if access token refers to the creator of the game setting", async () => {
+      it("should respond with status 403 if access token refers to the creator of the game setting", async () => {
         const user = await createUser();
         const accessToken = createToken({ userId: user.id, type: TokenTypes.access });
         const gameSetting = await createGameSetting({ userId: user.id });
@@ -58,7 +58,7 @@ describe("POST /game/join", () => {
           .set("Authorization", `Bearer ${accessToken}`)
           .send({ path: gameSetting.path });
       
-        expect(response.status).toBe(httpStatus.UNAUTHORIZED);
+        expect(response.status).toBe(httpStatus.FORBIDDEN);
       }); 
     
       it("should respond with status 201 and playerToken", async () => {
@@ -72,7 +72,7 @@ describe("POST /game/join", () => {
 
         const checkGameSetting = await prisma.game.findUnique({ where: { path: gameSetting.path } });
         
-        expect(checkGameSetting).toEqual([]);
+        expect(checkGameSetting).toBeNull();
         expect(response.status).toBe(httpStatus.CREATED);
         expect(typeof(response.body.playerToken)).toBe('string');
       }); 
