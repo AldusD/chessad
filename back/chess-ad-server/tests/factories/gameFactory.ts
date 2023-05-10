@@ -9,8 +9,8 @@ export async function createGame(params: Partial<Game> = {}): Promise<Game> {
   const pgn = params.pgn || faker.lorem.word();
   const path = params.path || faker.internet.password();
   const isOpen = params.isOpen || 0; // default value work as false
-  const time = params.time || Math.floor(Math.random() * 10)
-  const increment = params.increment || Math.floor(Math.random() * 10)
+  const time = params.time || Math.floor(Math.random() * 10);
+  const increment = params.increment || Math.floor(Math.random() * 10);
   const createdAt = params.createdAt || new Date(Date.now());
   const whitePlayerId = params.whitePlayerId;
   const blackPlayerId = params.blackPlayerId;
@@ -19,6 +19,7 @@ export async function createGame(params: Partial<Game> = {}): Promise<Game> {
   try {
     const game = await prisma.game.create({
       data: {
+        result,
         pgn,
         path,
         isOpen: !!isOpen,

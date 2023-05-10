@@ -6,23 +6,28 @@ dotenv.config();
 enum TokenTypes {
   access,
   refresh  
-}
+};
 
 enum PlayerTokenTypes {
   creatorPlayer,
   joiningPlayer
-}
+};
+
+enum Teams {
+  white,
+  black
+};
 
 type TokenData = {
   userId: string,
-  type: TokenTypes     
-}
+  type: TokenTypes,     
+};
 
 type PlayerTokenData = {
   path: string,
-  type: PlayerTokenTypes
-
-}
+  type: PlayerTokenTypes,
+  team?: Teams
+};
 
 function createToken(payload: TokenData | PlayerTokenData, expiration?: string | number) {
   const expiresIn = expiration || '1h'; 
@@ -31,4 +36,4 @@ function createToken(payload: TokenData | PlayerTokenData, expiration?: string |
 
 const getTokenDataOrFail = (token: string, callback: any) => jwt.verify(token, process.env.JWT_SECRET, callback);
 
-export { createToken, getTokenDataOrFail, TokenTypes, TokenData, PlayerTokenTypes, PlayerTokenData };
+export { createToken, getTokenDataOrFail, TokenTypes, TokenData, PlayerTokenTypes, PlayerTokenData, Teams };

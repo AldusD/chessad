@@ -7,13 +7,14 @@ export enum Errors {
   serverError,
   unauthorizedError,
   cannotJoinGameError,
-  unprocessableEntityError
+  unprocessableEntityError,
+  InvalidDataError
 }
 
 export function invalidPathError(): ApplicationError {
   return {
     name: Errors.invalidPathError,
-    message: "This path does not correspond to an active gameSetting"
+    message: "This path does not correspond to an active game or gameSetting"
   };
 }
 
