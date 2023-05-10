@@ -7,7 +7,7 @@ const notImplement = (_: any, res: Response) => res.sendStatus(501);
 
 gameRouter.get("/", notImplement);
 gameRouter.get("/:path", getGameByPath);
-gameRouter.get("/:path/token", getPlayerToken);
+gameRouter.get("/:path/token", verifyToken, getPlayerToken);
 gameRouter.post("/join", verifyToken, postJoinGame);
 
 export { gameRouter };

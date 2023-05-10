@@ -57,7 +57,7 @@ async function sendPlayerToken(getTokenData: JoinGameParams): Promise<string> {
   
   const game = await gameRepository.findByPath(path);
   if (!game) throw invalidPathError();
-  if(userId !== game.whitePlayerId && userId !== game.blackPlayerId) throw cannotJoinGameError('User is not signed as player of this game');
+  if (userId !== game.whitePlayerId && userId !== game.blackPlayerId) throw cannotJoinGameError('User is not signed as player of this game');
   const team = (userId === game.whitePlayerId) ? Teams.white : Teams.black;
   const playerToken = createToken({ type: PlayerTokenTypes.joiningPlayer, path, team }, '10d');
 

@@ -178,7 +178,7 @@ describe("GET /game/:path/token", () => {
       const response = await server.get(`/game/${game.path}/token`).set("Authorization", `Bearer ${accessToken}`);  
       
       expect(response.status).toBe(httpStatus.OK);
-      expect(typeof(response.body.token)).toBe('string');
+      expect(typeof(response.body.playerToken)).toBe('string');
     });
 
     it("should respond with status 200 and corresponding data (player as black)", async () => {
@@ -192,7 +192,7 @@ describe("GET /game/:path/token", () => {
       const response = await server.get(`/game/${game.path}/token`).set("Authorization", `Bearer ${accessToken}`);  
       
       expect(response.status).toBe(httpStatus.OK);
-      expect(typeof(response.body.token)).toBe('string');
+      expect(typeof(response.body.playerToken)).toBe('string');
     });
   })
 });
