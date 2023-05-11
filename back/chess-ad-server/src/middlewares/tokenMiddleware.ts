@@ -13,7 +13,6 @@ export function verifyToken(req: Request, res: Response, next: NextFunction) {
   
   getTokenDataOrFail(token, (error: jwt.JsonWebTokenError, tokenData: TokenData) => {
     if (error) {
-      console.log(error);
       return res.status(httpStatus.UNAUTHORIZED).send('invalid token');
     }
 

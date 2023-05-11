@@ -9,6 +9,7 @@ import Guest from '../../../assets/guest.jpg';
 import LoadingQueen from '../../../assets/loading-queen.png';
 import { WaitingRoomStyles } from "./styles";
 import { Loading } from "../../comons/styles";
+
 export default function WaitingRoom() {
   const { gameSettings } = useGame();
   const API = process.env.REACT_APP_API_BASE_URL;
@@ -23,31 +24,39 @@ export default function WaitingRoom() {
 
   useEffect(() => {
     getGameSettings(gamePath);
-    socket.emit("join_game", { path: gamePath });
+    socket.emit("join_game", { playerToken: localStorage.getItem('playerToken') });
   }, [])
 
   useEffect(() => {
-    socket.on("join", (message) => {
-      console.log('join')
+    if (gameSettingData && gameSettingData.error) {
+      return navigate('/home');
+    }
+  }, [gameSettingData])
+
+  useEffect(() => {
+    socket.on("join_game", (message) => {
       navigate('/games/play/' + gamePath);
     });
+
+    socket.on("error", (message) => {
+      console.log('error listener - ', message)
+    })
   }, [socket])
   
   return (
     <WaitingRoomStyles>
       <Header />
       <main>
-        <img src={gameSettingData?.game.user.profilePicture || Guest} />
-        {gameSettingData ? 
+        {(gameSettingData && !gameSettingData.error) ? <>
+          <img src={gameSettingData?.game.user.profilePicture || Guest} />
           <span>
             {gameSettingData.game.user.username} • {' '}
             {gameSettingData.game.time} + {gameSettingData.game.increment} • {' '}
             {gameSettingData.game.side}
-          </span> : <></>
+          </span></> : <></>
         }
         <div><p>Waiting an honored opponent</p><Loading size={'10vh'} src={LoadingQueen} /></div>
       </main>
     </WaitingRoomStyles>
   )
-
 };

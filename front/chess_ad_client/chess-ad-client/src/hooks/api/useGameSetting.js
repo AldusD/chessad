@@ -21,6 +21,8 @@ const listGameByPath = async (path) => {
   };
 
   const response = await fetch(`${API}/game-setting/${path}`, options);
+  console.log('res', response)
+  if (response.status != 200) return { error: response, status: response.status };
   const data = response.json();
   return data;
 }

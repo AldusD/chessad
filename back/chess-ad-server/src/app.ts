@@ -35,6 +35,7 @@ const io = new Server(httpServer,
 const onConnection = (socket: Socket) => connectServices(io, socket);
 io.on("connection", onConnection);
 instrument(io, { auth: false })
+
 export function init(): Promise<Express> {
   connectDb();
   return Promise.resolve(app);
