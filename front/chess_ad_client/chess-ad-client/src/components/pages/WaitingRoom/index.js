@@ -12,7 +12,6 @@ import { Loading } from "../../comons/styles";
 
 export default function WaitingRoom() {
   const { gameSettings } = useGame();
-  const API = process.env.REACT_APP_API_BASE_URL;
   const gamePath = useParams().gamePath;
   const navigate = useNavigate();
   const { socket } = useSocket();

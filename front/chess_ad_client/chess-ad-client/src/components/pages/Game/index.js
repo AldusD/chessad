@@ -10,6 +10,7 @@ import { useGetGameByPath } from "../../../hooks/api/useGame";
 import { usePlayerToken } from "../../../hooks/api/useGame";
 import { useUser } from "../../../contexts/UserContext";
 import { useNewTokens } from "../../../hooks/api/useAuthentication";
+import { useSocket } from "../../../contexts/SocketContext";
 
 export default function Game () {
   const { userData } = useUser();
@@ -18,6 +19,7 @@ export default function Game () {
   const gamePath = useParams().gamePath;
   const [teams, setTeams] = useState(['white', 'black']);
   const navigate = useNavigate();
+  const { socket } = useSocket();
 
   const {
     mutate: requestGameData,
@@ -36,14 +38,14 @@ export default function Game () {
 
   useEffect(() => {
     requestGameData(gamePath);
+    socket.emit("join_game", { playerToken: localStorage.getItem('playerToken') });
+    requestPlayerToken(gamePath);
   }, [])
 
   useEffect(() => {
     if (gameData && gameData.game) {
       if (gameData.game.blackPlayer.username == userData.username) setTeams(['black', 'white']);
     }
-    console.log(`${teams[0]}Player`)
-    console.log(`${teams[1]}Player`)
   }, [gameData])
 
   useEffect(() => {
@@ -58,8 +60,9 @@ export default function Game () {
     <GamePageStyles>
     <Header />
     <GameContainer>
-    <Chessboard pointOfView={pointOfView} />
-    <div className="data-container">
+    <Chessboard pointOfView={teams[0]} />
+    { (gameData && gameData.game) ? 
+      <div className="data-container">
       <PlayerData 
         profilePicture={ (gameData && gameData.game[`${teams[1]}Player`].profilePicture) ? 
           gameData.game[`${teams[1]}Player`].profilePicture 
@@ -72,7 +75,8 @@ export default function Game () {
           Guest 
         } 
         color={teams[1]} 
-        showOptions={false} />
+        showOptions={false}
+        initialTime={ gameData.game.time } />
       <PlayerData 
         profilePicture={ (gameData && gameData.game[`${teams[0]}Player`].profilePicture) ?  
           gameData.game[`${teams[0]}Player`].profilePicture 
@@ -85,8 +89,12 @@ export default function Game () {
           Guest 
         } 
         color={teams[0]} 
-        showOptions={true} />
-    </div>
+        showOptions={true} 
+        initialTime={ gameData.game.time } />
+      </div> 
+      :
+      <></>
+    }
     </GameContainer>
     </GamePageStyles>
   )
