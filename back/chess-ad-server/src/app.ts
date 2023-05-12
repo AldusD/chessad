@@ -7,7 +7,7 @@ import { Server, Socket } from "socket.io";
 import { instrument } from '@socket.io/admin-ui'
 
 import connectServices from "./sockets";
-import { loadEnv, connectDb, disconnectDB, prisma } from "./config";
+import { loadEnv, connectDb, disconnectDB, prisma, connectRedis } from "./config";
 import { authenticationRouter, gameSettingRouter, gameRouter } from "./routers";
 
 loadEnv();
@@ -38,6 +38,7 @@ instrument(io, { auth: false })
 
 export function init(): Promise<Express> {
   connectDb();
+  connectRedis();
   return Promise.resolve(app);
 }
 

@@ -24,6 +24,7 @@ export default function WaitingRoom() {
   useEffect(() => {
     getGameSettings(gamePath);
     socket.emit("join_game", { playerToken: localStorage.getItem('playerToken') });
+    socket.emit('test_redis_create');
   }, [])
 
   useEffect(() => {
@@ -40,6 +41,8 @@ export default function WaitingRoom() {
     socket.on("error", (message) => {
       console.log('error listener - ', message)
     })
+    socket.emit('test_redis_read');
+    socket.on('redis_test_client', (data) => console.log(data))
   }, [socket])
   
   return (
