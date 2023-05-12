@@ -67,3 +67,18 @@ export const FieldError = styled.p`
   text-align: center;
   width: ${props => props.width};
 `;
+
+export const Loading = styled.img`
+  height: ${props => props.size};
+  animation: spin 2s linear infinite;
+  
+  @keyframes spin {
+    0% {
+      transform: rotateY(0turn);
+    }
+
+    100% {
+      transform: rotateY(1turn);
+    }
+  }
+`;

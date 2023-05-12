@@ -4,8 +4,9 @@ import httpStatus from "http-status";
 
 import app, { init } from "../../src/app";
 import { cleanDb } from "../helpers";
-import { createUser } from "../factories";
+import { createUser, createSession } from "../factories";
 import { prisma } from "../../src/config";
+import { TokenTypes, createToken } from "../../src/utils/token";
 
 beforeAll(async () => {
   await init();
@@ -30,7 +31,7 @@ describe("POST /auth/sign-in", () => {
 
   describe("when body is valid", () => {
     const generateValidBody = () => ({
-      email: faker.internet.email(),
+      email: faker.internet.email().toLowerCase(),
       password: faker.internet.password(6),
     });
 
@@ -71,8 +72,8 @@ describe("POST /auth/sign-in", () => {
           }
         });
 
-        expect(typeof(response.body.token.accessToken)).toBe("string");
         expect(response.status).toBe(httpStatus.OK);
+        expect(typeof(response.body.token.accessToken)).toBe("string");
         expect(response.body.token.refreshToken).toBe(session.token);
         expect(response.body.user).toEqual({
           username: checkUser.username,
@@ -99,7 +100,7 @@ describe("POST /auth/sign-up", () => {
   it("should respond with status 422 when body is not valid (password)", async () => {
     const invalidBody = { 
       username: faker.lorem.word(),
-      email: faker.internet.email(),
+      email: faker.internet.email().toLowerCase(),
       password: faker.internet.password(2),
      };
     const response = await server.post("/auth/sign-up").send(invalidBody);
@@ -118,8 +119,8 @@ describe("POST /auth/sign-up", () => {
   
   it("should respond with status 422 when body is not valid (username)", async () => {
     const invalidBody = { 
-      username: faker.internet.email(),
-      email: faker.internet.email(),
+      username: faker.internet.email().toLowerCase(),
+      email: faker.internet.email().toLowerCase().toLowerCase(),
       password: faker.internet.password(6),
      };
     const response = await server.post("/auth/sign-up").send(invalidBody);
@@ -129,14 +130,14 @@ describe("POST /auth/sign-up", () => {
   describe("when body is valid", () => {
     const generateValidBody = () => ({
       username: faker.lorem.word(4),
-      email: faker.internet.email(),
+      email: faker.internet.email().toLowerCase(),
       password: faker.internet.password(6),
     });
 
     it("should respond with status 409 if there is already an user for given email", async () => {
       const body = generateValidBody();
       await createUser({ email: body.email });
-
+      
       const response = await server.post("/auth/sign-up").send(body);
 
       expect(response.status).toBe(httpStatus.CONFLICT);
@@ -144,7 +145,7 @@ describe("POST /auth/sign-up", () => {
 
     it("should respond with status 409 if username is already in use", async () => {
       const body = generateValidBody();
-      await createUser({ email: faker.internet.email(), username: body.username });
+      await createUser({ email: faker.internet.email().toLocaleLowerCase(), username: body.username });
 
       const response = await server.post("/auth/sign-up").send(body);
 
@@ -163,6 +164,63 @@ describe("POST /auth/sign-up", () => {
 
       expect(user.username).toBe(body.username);
       expect(response.status).toBe(httpStatus.CREATED);
+    });
+  });
+})
+
+describe("POST /auth/logout", () => {
+  it("should respond with status 401 if no token is given", async () => {
+    const response = await server.post("/auth/logout");
+    
+    expect(response.status).toBe(httpStatus.UNAUTHORIZED);
+  });  
+
+  it("should respond with status 401 if given access token is not valid", async () => {
+    const accessToken = faker.lorem.word();
+    const response = await server.post("/auth/logout").set("Authorization", `Bearer ${accessToken}`);  
+    
+    expect(response.status).toBe(httpStatus.UNAUTHORIZED);
+  });
+
+  it("should respond with status 204", async () => {
+    const user = await createUser();
+    const refreshToken = createToken({ userId: user.id, type: TokenTypes.refresh });
+    const accessToken = createToken({ userId: user.id, type: TokenTypes.access });  
+    
+    await createSession({ userId: user.id, token: refreshToken });
+    const response = await server.post("/auth/logout").set("Authorization", `Bearer ${accessToken}`);
+    const userSessions = await prisma.session.findMany({ where: { userId: user.id } });
+
+    expect(response.status).toBe(httpStatus.NO_CONTENT);
+    expect(userSessions).toEqual([]);
+  });
+})
+
+describe("GET /auth/data", () => {
+  it("should respond with status 401 if no token is given", async () => {
+    const response = await server.get("/auth/data");
+    
+    expect(response.status).toBe(httpStatus.UNAUTHORIZED);
+  });  
+
+  it("should respond with status 401 if given access token is not valid", async () => {
+    const accessToken = faker.lorem.word();
+    const response = await server.get("/auth/data").set("Authorization", `Bearer ${accessToken}`);  
+    
+    expect(response.status).toBe(httpStatus.UNAUTHORIZED);
+  });
+
+  it("should respond with status 200 and corresponding user data", async () => {
+    const user = await createUser();
+    const accessToken = createToken({ userId: user.id, type: TokenTypes.access });  
+    
+    const response = await server.get("/auth/data").set("Authorization", `Bearer ${accessToken}`)
+
+    expect(response.status).toBe(httpStatus.OK);
+    expect(response.body.user).toEqual({
+      username: user.username,
+      email: user.email,
+      profilePicture: user.profilePicture
     });
   });
 })

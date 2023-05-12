@@ -14,7 +14,7 @@ model User {
   id              String    @id @default(auto()) @map("_id") @db.ObjectId
   username        String    @unique
   email           String    @unique
-  password        String
+  password        String?
   profilePicture  String?    
   createdAt       DateTime  @default(now())
   asWhiteGames    Game[]    @relation("AsWhite")
@@ -44,10 +44,12 @@ model GameSetting {
 
 model Game {
   id            String    @id @default(auto()) @map("_id") @db.ObjectId
-  result        String 
-  pgn           String
+  result        String? 
+  pgn           String?
   path          String    @unique
   isOpen        Boolean   @default(true)
+  time          Int
+  increment     Int
   createdAt     DateTime  @default(now())
   whitePlayer   User      @relation("AsWhite", fields: [whitePlayerId], references: [id])
   whitePlayerId String    @db.ObjectId

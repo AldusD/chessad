@@ -39,9 +39,25 @@ async function create(data: Prisma.UserUncheckedCreateInput) {
   });
 }
 
+async function listUserData(userId: string) {
+  const params: Prisma.UserFindUniqueArgs = {
+    where: {
+      id: userId,
+    },
+    select: {
+      username: true,
+      email: true,
+      profilePicture: true,
+    }
+  };
+
+  return prisma.user.findUnique(params);
+}
+
 const authenticationRepository = {
   findByEmail,
   findByUsername,
+  listUserData,
   create, 
 };
 

@@ -1,5 +1,6 @@
 import { useQuery, useMutation } from "react-query";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "../../contexts/UserContext";
 
 const API = process.env.REACT_APP_API_BASE_URL;
 
@@ -17,13 +18,53 @@ const register = async (userData) => {
   return data;
 }
 
+const logout = async () => {
+  const options = { 
+    headers: { 
+      'Content-Type': 'application/json', 
+      Authorization: `Bearer ${localStorage.getItem('accessToken')}` }, 
+      method: 'POST', 
+    };
+
+  const response = await fetch(`${API}/auth/logout`, options);
+  const data = response.text();
+  return data;
+}
+
+const getUserData = async () =>  {
+  const options = { 
+    headers: { 
+      'Content-Type': 'application/json', 
+      Authorization: `Bearer ${localStorage.getItem('accessToken')}` }, 
+      method: 'GET', 
+    };
+
+  const response = await fetch(`${API}/auth/data`, options);
+  const data = response.text();
+  return data;
+}
+
+const getNewTokens = async () =>  {
+  const options = { 
+    headers: { 
+      'Content-Type': 'application/json', 
+      Authorization: `Bearer ${localStorage.getItem('refreshToken')}` }, 
+    method: 'GET',  
+  };
+
+  const response = await fetch(`${API}/auth/token`, options);
+  const data = response.text();
+  console.log('user data', data);
+  return data;
+}
+
 export function useSignin () {
-  const navigateToHome = (data, navigate) => {
-    console.log(data)
-    if (data[0] === '{') return;
-    const tokens = JSON.parse(data).token;
-    localStorage.setItem("accessToken", tokens.accessToken);
-    localStorage.setItem("refreshToken", tokens.refreshToken);
+  const { userData, setUserData } = useUser();
+  const navigateToHome = (data) => {
+    if (data[0] !== '{') return;
+    localStorage.setItem("accessToken", JSON.parse(data).token.accessToken);
+    localStorage.setItem("refreshToken", JSON.parse(data).token.refreshToken);
+    setUserData({ ...JSON.parse(data).user });
     return;
   }
   
@@ -32,4 +73,38 @@ export function useSignin () {
 
 export function useSignup () {
   return useMutation(register);  
+}
+
+export function useLogout () {
+  const clearStorage = (data) => {
+    localStorage.setItem("accessToken", '');
+    localStorage.setItem("refreshToken",'');
+    return;
+  }
+
+  return useMutation(logout, { onSuccess: clearStorage });
+}
+
+export function useUserData () {
+  const { userData, setUserData } = useUser();
+  const { mutate: tryNewTokens } = useNewTokens();
+  
+  const fillUserData = (data) => {
+    if (data[0] !== '{') return; 
+    setUserData({ ...JSON.parse(data).user });
+    return;
+  }
+
+  return useMutation(getUserData, { onSuccess: fillUserData });
+}
+
+export function useNewTokens () {
+  const fillTokens = (data) => {
+    if (data[0] !== '{') return;
+    localStorage.setItem("accessToken", JSON.parse(data).token.accessToken);
+    localStorage.setItem("refreshToken", JSON.parse(data).token.refreshToken);
+    return;
+  }
+
+  return useMutation(getNewTokens, { onSuccess: fillTokens });
 }

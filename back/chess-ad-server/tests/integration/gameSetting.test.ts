@@ -4,9 +4,8 @@ import httpStatus from "http-status";
 
 import app, { init } from "../../src/app";
 import { cleanDb } from "../helpers";
-import { createUser, createSession, CreateGameSetting } from "../factories";
-import { prisma } from "../../src/config";
-import { createToken, TokenTypes } from "@/utils/token";
+import { createUser, createGameSetting } from "../factories";
+import { createToken, TokenTypes } from "../../src/utils/token";
 
 beforeAll(async () => {
   await init();
@@ -21,15 +20,34 @@ describe("GET /game-setting", () => {
   
       expect(response.status).toBe(httpStatus.OK);
       expect(response.body.games).toEqual([]);
+  });
+
+  it("should respond with status 200 and an empty array (expired game settings)", async () => {
+    const user = await createUser();
+    const expiredDate = new Date(Date.now() - (1000 * 60 * 60 * 10));
+    const gameSetting = await createGameSetting({ userId: user.id, createdAt: expiredDate });
+    const response = await server.get("/game-setting");
+
+    expect(response.status).toBe(httpStatus.OK);
+    expect(response.body.games).toEqual([]);
   }); 
 
   it("should respond with status 200 and the correspondent data", async () => {
       const user = await createUser();
-      const gameSetting = CreateGameSetting({ userId: user.id });
+      const gameSetting = await createGameSetting({ userId: user.id });
       const response = await server.get("/game-setting");
-  
+
       expect(response.status).toBe(httpStatus.OK);
-      expect(response.body.games[0]).toEqual(gameSetting);
+      expect(response.body.games).toEqual([
+        { 
+          ...gameSetting, 
+          createdAt: gameSetting.createdAt.toISOString(), 
+          user: {
+            username: user.username,
+            email: user.email,
+            profilePicture: user.profilePicture
+          }
+        }]);
   }); 
 });
 
@@ -44,14 +62,6 @@ describe("POST /game-setting", () => {
     const accessToken = faker.lorem.word();
     const response = await server.post("/game-setting").set("Authorization", `Bearer ${accessToken}`);  
     
-    expect(response.status).toBe(httpStatus.UNAUTHORIZED);
-  });
-
-  it("should respond with status 401 if there is no session for given refresh token", async () => {
-    const userWithoutSession = await createUser();
-    const refreshToken = createToken({ userId: userWithoutSession.id, type: TokenTypes.refresh });
-    const response = await server.post("/game-setting").set("Authorization", `Bearer ${refreshToken}`);
-
     expect(response.status).toBe(httpStatus.UNAUTHORIZED);
   });
 
@@ -81,15 +91,13 @@ describe("POST /game-setting", () => {
         return {
           time: Math.floor(Math.random() * 10),
           increment: Math.floor(Math.random() * 10),
-          side: sides[Math.floor(Math.random() * 3)],
-          userId: ''
+          side: sides[Math.floor(Math.random() * 3)]
         }
       };
   
-      it("should respond with status 201", async () => {
+      it("should respond with status 201 and corresponding data", async () => {
         const user = await createUser();
         const body = generateValidBody();
-        body.userId = user.id;
         const accessToken = createToken({ userId: user.id, type: TokenTypes.access });  
         const response = await server.post("/game-setting")
           .set("Authorization", `Bearer ${accessToken}`)
@@ -97,7 +105,34 @@ describe("POST /game-setting", () => {
   
         expect(response.status).toBe(httpStatus.CREATED);
         expect(typeof(response.body.path)).toBe('string');
+        expect(typeof(response.body.playerToken)).toBe('string');
       });
     });
   });
+});
+
+describe("GET /game-setting/:path", () => {
+  it("should respond with status 410 if there is no active game setting for this path", async () => {
+      const invalidPath = faker.lorem.word();
+      const response = await server.get(`/game-setting/${invalidPath}`);
+      expect(response.status).toBe(httpStatus.GONE);
+  }); 
+
+  it("should respond with status 200 and the correspondent data", async () => {
+      const user = await createUser();
+      const gameSetting = await createGameSetting({ userId: user.id });
+      const response = await server.get(`/game-setting/${gameSetting.path}`);
+
+      expect(response.status).toBe(httpStatus.OK);
+      expect(response.body.game).toEqual(
+        { 
+          ...gameSetting, 
+          createdAt: gameSetting.createdAt.toISOString(), 
+          user: {
+            username: user.username,
+            email: user.email,
+            profilePicture: user.profilePicture
+          }
+        });
+  }); 
 });

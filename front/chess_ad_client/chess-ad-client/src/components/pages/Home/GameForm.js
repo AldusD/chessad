@@ -1,18 +1,52 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { GameFormStyles, CreateForm, SideButton, Options } from "./styles";
 import Form from '../../comons/Form';
 import { FieldError } from '../../comons/styles';
+import { useCreateGame } from '../../../hooks/api/useGameSetting';
+import { useNewTokens } from '../../../hooks/api/useAuthentication';
+import { useGame } from '../../../contexts/GameContext';
+import { useUser } from '../../../contexts/UserContext';
 
 export default function GameForm () {
   const [selectedTime, setSelectedTime] = useState(-2);
   const [selectedSide, setSelectedSide] = useState(-2);
   const [form, setForm] = useState({ time: '', increment: '' });
   const [errors, setErrors] = useState({ time: '', side: '' });
+  const [createdGameData, setCreatedGameData] = useState({});
   const timeControls = ['15 + 5', '10 + 5', '10 + 0', '5 + 3', '3 + 2', '3 + 0', '2 + 1', 'Custom'];
   const customIndex = (timeControls.length - 1);
+  const { gameSettings, setGameSettings } = useGame();
+  const { userData } = useUser();
+
+  const {
+    mutate: createGameForm,
+    data: newGameData,
+  } = useCreateGame();
+  
+  const {
+    mutate: requestTokens,
+    data: newTokensData
+  } = useNewTokens();
+
+  const navigate = useNavigate();
+
+  const requestNewGame = async(gameData) => {
+    try {
+      const { time: timeString, side } = gameData;
+      const time = timeString.split(' ')[0];
+      const increment = timeString.split(' ')[2];
+      setCreatedGameData({ timeControl: time, increment, side });
+      const result = await createGameForm({ time, increment, side });
+    } catch(error) {
+      console.log('err', error);
+    }
+  }
 
   const createGame = () => {
-    const gameData = validateGameOptions();
+    const { data: gameData, error } = validateGameOptions();
+    if (!error) return requestNewGame(gameData);
+    return;    
   }
 
   const validateGameOptions = () => {
@@ -23,11 +57,16 @@ export default function GameForm () {
     if (selectedTime < 0) errors.time = 'Select a time control!';
     if (selectedSide < 0) errors.side = 'Select a side!';    
     if (selectedTime === customIndex) {
+      if (form.time <= 0 || form.increment < 0 || Math.round(form.time) != form.time || Math.round(form.increment) != form.increment) errors.time = 'Select a valid time control!';
       if (!form.time || !form.increment) errors.time = 'Select a time control!';
-      data.time = [form.time, form.increment];
-    }
-    if (errors.side || errors.time) return setErrors(errors);
-    return data;
+      data.time = `${form.time} + ${form.increment}`;
+    } else data.time = timeControls[selectedTime];
+    const sides = [' ', 'white', 'black', 'random'];
+    data.side = sides[selectedSide]
+
+    setErrors(errors);
+    if (errors.side || errors.time) return { error: true };
+    return { data, error: false };
   }
 
   const selectOption = (option, type, setType) => {
@@ -39,6 +78,26 @@ export default function GameForm () {
   const selectSide = (side) => selectOption(side, selectedSide, setSelectedSide);
 
   const updateForm = e => setForm({ ...form, [e.target.name]: e.target.value});
+
+  useEffect(() => {
+    if (newGameData === 'invalid token') {
+      return requestTokens();
+    }
+
+    if(newGameData && newGameData[0] === '{' && JSON.parse(newGameData).path) {
+      const game = JSON.parse(newGameData);
+      setGameSettings({ ...gameSettings, ...createdGameData })
+      navigate(`/games/join/${game.path}/`)
+    }
+  }, [newGameData])
+
+  useEffect(() => {
+    if (newTokensData === 'refresh token expired or invalid') navigate('/');
+    
+    if (newGameData === 'invalid token') {
+      createGame();
+    }
+  }, [newTokensData])
 
   return (
     <GameFormStyles>

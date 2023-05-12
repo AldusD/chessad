@@ -10,9 +10,10 @@ const STATUS = Object.freeze({
 
 function GameProvider({ children }) {
   const [gameStatus, setGameStatus] = useState(STATUS.ONGOING);
+  const [gameSettings, setGameSettings] = useState({});
 
   return (
-    <GameContext.Provider value={{ gameStatus, setGameStatus, STATUS }}>
+    <GameContext.Provider value={{ gameStatus, setGameStatus, STATUS, gameSettings, setGameSettings }}>
       {children}
     </GameContext.Provider>
   );

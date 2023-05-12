@@ -7,7 +7,7 @@ import { HomeStyles, Container } from "./styles";
 export default function Home() {
     return (
       <HomeStyles>
-        <Header username='Guest' />
+        <Header />
           <Container>
             <GameForm />
             <GameHall />
