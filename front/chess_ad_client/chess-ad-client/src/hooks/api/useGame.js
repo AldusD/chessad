@@ -62,8 +62,8 @@ export function useGetGameByPath () {
 
 export function usePlayerToken () {      
     const fillToken = (data) => {
-      if (data[0] !== '{') return;
-      return localStorage.setItem("playerToken", JSON.parse(data).playerToken);
+      if (!data.playerToken) return;
+      return localStorage.setItem("playerToken", data.playerToken);
     }
   
     return useMutation(getPlayerToken, { onSuccess: fillToken });  

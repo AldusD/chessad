@@ -35,8 +35,8 @@ export type CreateGameSettingResponse = {
 
 async function createGameSetting(gameSettingData: GameSettingParams): Promise<CreateGameSettingResponse> {
   const path = uuid();
-  const playerToken = createToken({ type: PlayerTokenTypes.creatorPlayer, path }, '10d');
   const gameSetting = await gameSettingRepository.create({...gameSettingData, path});
+  const playerToken = createToken({ type: PlayerTokenTypes.creatorPlayer, path, timeControl: [gameSetting.time, gameSetting.increment] }, '10d');
   return { path: gameSetting.path, playerToken };
 }
 

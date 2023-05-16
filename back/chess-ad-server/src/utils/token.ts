@@ -20,12 +20,13 @@ enum Teams {
 
 type TokenData = {
   userId: string,
-  type: TokenTypes,     
+  type: TokenTypes,
 };
 
 type PlayerTokenData = {
   path: string,
   type: PlayerTokenTypes,
+  timeControl: number[],
   team?: Teams
 };
 

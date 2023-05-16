@@ -12,12 +12,17 @@ export default function Chessboard({ pointOfView, reset }) {
   const [promotion, setPromotion] = useState([false, '']);
   const [usingSpell, setUsingSpell] = useState(false);
   const [refresh, setRefresh] = useState(false);
-  const { gameStatus, STATUS } = useGame();
+  const { position, gameStatus, STATUS } = useGame();
 
   useEffect(() => {
     if (pointOfView === 'black' && squares[0][0] === 1) setSquares([...squares.reverse()]);
     if (pointOfView === 'white' && squares[0][0] === 8) setSquares([...squares.reverse()]);
   }, [pointOfView]);
+
+  useEffect(() => {
+    if (!position) return;
+    setPieces(position);
+  }, [position])
 
   useEffect(() => {setPieces(startPieces())}, [reset])
 

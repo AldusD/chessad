@@ -5,9 +5,9 @@ import Chessboard from "../../ChessSet/Chessboard";
 import PlayerData from "../../GameInfo/PlayerData";
 import Guest from "../../../assets/guest.jpg";
 import Header from "../../Header";
-import { useGame } from "../../../contexts/GameContext"; 
 import { useGetGameByPath } from "../../../hooks/api/useGame";
 import { usePlayerToken } from "../../../hooks/api/useGame";
+import { useGame } from "../../../contexts/GameContext"; 
 import { useUser } from "../../../contexts/UserContext";
 import { useNewTokens } from "../../../hooks/api/useAuthentication";
 import { useSocket } from "../../../contexts/SocketContext";
@@ -20,6 +20,7 @@ export default function Game () {
   const [teams, setTeams] = useState(['white', 'black']);
   const navigate = useNavigate();
   const { socket } = useSocket();
+  const { newMove, setNewMove, setPosition } = useGame();
 
   const {
     mutate: requestGameData,
@@ -52,9 +53,31 @@ export default function Game () {
     if (newTokensData === 'refresh token expired or invalid') navigate('/');
     
     if (playerTokenData === 'invalid token') {
-      requestPlayerToken(gamePath);
+      requestTokens();
     }
   }, [newTokensData]);
+
+  useEffect(() => {
+    if (playerTokenData === 'invalid token') {
+      return requestTokens();
+    }
+ 
+    if (localStorage.getItem('playerToken')) socket.emit("position", { playerToken: localStorage.getItem('playerToken') });
+  }, [playerTokenData])
+
+  useEffect(() => {
+    if(!newMove) return;
+    socket.emit("move_piece", { playerToken: localStorage.getItem('playerToken'), moveDetails: newMove })
+  }, [newMove])
+
+  useEffect(() => {
+    socket.on("position", (position) => setPosition(JSON.parse(position)));
+
+    socket.on("move_error", (error) => {
+      if (error === 'Player token invalid or expired') return requestPlayerToken(gamePath);
+      return socket.emit("position", { playerToken: localStorage.getItem('playerToken') });
+    });
+  }, [socket])
         
   return (
     <GamePageStyles>

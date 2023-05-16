@@ -1,10 +1,14 @@
 import { Socket, Server } from "socket.io";
 
-import gameJoinService from '../services/gameJoinService'
+import gameplayService from "../services/gameplayService";
+import Events from "../eventEnums";
 
-const gamePlayHandlers = (io: Server, socket: Socket) => {
-  const joinGame = gameJoinService.joinGame(io, socket);
-  socket.on("move_piece", joinGame);
+const gameplayHandlers = (io: Server, socket: Socket) => {
+  const movePiece = gameplayService.movePiece(io, socket);
+  const sendPosition = gameplayService.sendPosition(io, socket);
+
+  socket.on(Events.MOVE_PIECE, movePiece);
+  socket.on(Events.POSITION, sendPosition);
 }
 
-export default gamePlayHandlers;
+export default gameplayHandlers;

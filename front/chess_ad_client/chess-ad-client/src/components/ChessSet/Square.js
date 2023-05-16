@@ -9,7 +9,7 @@ import PromotionModal from "./PromotionModal";
 export default function Square (props) {
   const { coordinates, color, pieces, setPieces, selectedSquare, setSelectedSquare, usingSpell, setUsingSpell, promotion, setPromotion, refresh, pointOfView } = props;
   const [move] = useMovePieces();
-  const { setGameStatus, STATUS } = useGame();
+  const { setGameStatus, STATUS, setNewMove } = useGame();
   
   const movePiece = info => {
     setPromotion([false, '']);
@@ -24,6 +24,7 @@ export default function Square (props) {
     
     if(!moveInfo.error) {
       setPieces(moveInfo.position);
+      setNewMove({ move: [info.selectedSquare, info.coordinates], usingSpell: info.usingSpell, promote: !!info.promote });
       setUsingSpell(false);
       if(moveInfo.checkmate) setGameStatus(STATUS[moveInfo.checkmate]);
       refresh.set(!refresh.value);

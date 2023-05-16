@@ -9,7 +9,7 @@ type TokenVerificationResult = {
 }
 
 export function verifyPlayerToken (playerToken: string): TokenVerificationResult {
-  if (!playerToken) return { error: Error('Send a player token') };  
+  if (!playerToken) return { error: Error('Player token invalid or expired') };  
   
   const result = {} as TokenVerificationResult;
   

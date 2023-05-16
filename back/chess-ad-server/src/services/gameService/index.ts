@@ -25,7 +25,7 @@ async function createGame(createGameParams: JoinGameParams) {
   const game = await gameRepository.create({ path, time, increment, whitePlayerId: teams[0], blackPlayerId: teams[1] });
   await gameSettingRepository.deleteByPath(path);
   
-  const playerToken = createToken({ type: PlayerTokenTypes.joiningPlayer, path }, '10d');
+  const playerToken = createToken({ type: PlayerTokenTypes.joiningPlayer, path, timeControl: [gameSetting.time, gameSetting.increment] }, '10d');
   return playerToken;
 }
 
@@ -59,7 +59,7 @@ async function sendPlayerToken(getTokenData: JoinGameParams): Promise<string> {
   if (!game) throw invalidPathError();
   if(userId !== game.whitePlayerId && userId !== game.blackPlayerId) throw cannotJoinGameError('User is not signed as player of this game');
   const team = (userId === game.whitePlayerId) ? Teams.white : Teams.black;
-  const playerToken = createToken({ type: PlayerTokenTypes.joiningPlayer, path, team }, '10d');
+  const playerToken = createToken({ type: PlayerTokenTypes.joiningPlayer, path, team, timeControl: [game.time, game.increment] }, '10d');
 
   return playerToken;
 }
