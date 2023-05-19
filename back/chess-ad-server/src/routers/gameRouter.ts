@@ -11,4 +11,4 @@ gameRouter.get("/:path", getGameByPath);
 gameRouter.get("/:path/token", verifyToken, getPlayerToken);
 gameRouter.post("/join", verifyToken, postJoinGame);
 
-export { gameRouter };
+export { gameRouter }; 
