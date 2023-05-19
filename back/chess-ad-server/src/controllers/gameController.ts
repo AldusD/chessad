@@ -63,7 +63,7 @@ export async function getPlayerToken(req: Request, res: Response) {
   }
 }
 
-export async function PatchGame(req: Request, res: Response) {
+export async function patchGame(req: Request, res: Response) {
   const { resultToken } = req.body;
 
   try {

@@ -2,7 +2,7 @@ import { Game, GameSetting } from "@prisma/client";
 import jwt from "jsonwebtoken";
 import gameSettingRepository from "../../repositories/gameSettingRepository";
 import gameRepository from "../../repositories/gameRepository";
-import { cannotJoinGameError, invalidPathError, unprocessableEntityError } from "../errors";
+import { cannotJoinGameError, invalidPathError, unprocessableEntityError, invalidTokenError } from "../errors";
 import { PlayerTokenTypes, Results, Teams, createToken, getTokenDataOrFail } from "../../utils/token";
 
 type JoinGameParams = {
@@ -67,7 +67,8 @@ async function sendPlayerToken(getTokenData: JoinGameParams): Promise<string> {
 
 type ResultTokenData = {
   pgn: string,
-  result: Results
+  result: Results,
+  path: string
 }
 
 type TokenVerificationResult = {
@@ -75,12 +76,12 @@ type TokenVerificationResult = {
   error?: Error 
 }
 
-const verifyPlayerToken = (resultToken: string): TokenVerificationResult {
+const verifyPlayerToken = (resultToken: string): TokenVerificationResult => {
   if (!resultToken) return { error: Error('Player token invalid or expired') };  
   
   const result = {} as TokenVerificationResult;
   
-  getTokenDataOrFail(resultToken, (error: jwt.JsonWebTokenError, tokenData: PlayerTokenData) => {
+  getTokenDataOrFail(resultToken, (error: jwt.JsonWebTokenError, tokenData: ResultTokenData) => {
     if (error || !tokenData.path) return result.error = Error('Player token invalid or expired');
     return result.tokenData = tokenData;
   })
@@ -89,9 +90,12 @@ const verifyPlayerToken = (resultToken: string): TokenVerificationResult {
 
 async function finishGame(resultToken: string): Promise<Game> {
   const { tokenData, error } = verifyPlayerToken(resultToken);
+  if (error) throw invalidTokenError();
+  const { path, result, pgn } = tokenData;
 
-  const game = await gameRepository.findByPath(path);
-  if (!game) throw invalidPathError();
+  const game = await gameRepository.updateByPath({ path, result, pgn });
+  if (!game) throw invalidPathError();  
+
   return game;
 }
 

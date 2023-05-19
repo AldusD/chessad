@@ -223,7 +223,27 @@ describe("PATCH /game", () => {
     const resultToken = createToken({ path: game.path, result, pgn });
 
     const response = await server.get(`/game/${game.path}/token`).send({ resultToken });
-    const filledGame = await prisma.game.findUnique({ where: { path: game.path } });
+    const filledGame = await prisma.game.findUnique({ 
+      where: { 
+        path: game.path 
+      },
+      include: {
+        whitePlayer: {
+          select: {
+            email: true,
+            username: true,
+            profilePicture: true,
+          }
+        },
+        blackPlayer: {
+          select: {
+            email: true,
+            username: true,
+            profilePicture: true,
+          }
+        }
+      }  
+    });
     
     expect(response.status).toBe(httpStatus.OK);
     expect(response.body).toEqual(filledGame);
