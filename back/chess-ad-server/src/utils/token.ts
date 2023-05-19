@@ -3,6 +3,12 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+export enum Results {
+  WHITE = 'white',
+  BLACK = 'black',
+  TIE = 'tie',
+}
+
 enum TokenTypes {
   access,
   refresh  
@@ -30,7 +36,13 @@ type PlayerTokenData = {
   team?: Teams
 };
 
-function createToken(payload: TokenData | PlayerTokenData, expiration?: string | number) {
+type GameResultTokenData = {
+  path: string,
+  result: Results,
+  pgn: string
+}
+
+function createToken(payload: TokenData | PlayerTokenData | GameResultTokenData, expiration?: string | number) {
   const expiresIn = expiration || '1h'; 
   return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn });
 }

@@ -20,7 +20,7 @@ export default function Game () {
   const [teams, setTeams] = useState(['white', 'black']);
   const navigate = useNavigate();
   const { socket } = useSocket();
-  const { newMove, setNewMove, setPosition } = useGame();
+  const { newMove, setNewMove, setPosition, setPlayersTimes, setExistDrawOffer } = useGame();
 
   const {
     mutate: requestGameData,
@@ -71,7 +71,17 @@ export default function Game () {
   }, [newMove])
 
   useEffect(() => {
-    socket.on("position", (position) => setPosition(JSON.parse(position)));
+    socket.on("position", (positionData) => {
+      if (positionData.position) setPosition(JSON.parse(positionData.position));
+      if (positionData.status?.whitePlayerTime && positionData.status?.blackPlayerTime && positionData.status?.turn ) setPlayersTimes(positionData.status);
+    });
+
+    socket.on("offer_draw", (message) => {
+      if (message === 'draw') setExistDrawOffer(true);
+      if (message === 'canceled') setExistDrawOffer(false);
+    })
+    
+    socket.on("game_result", (resultToken) => console.log('idx79_gr', resultToken));
 
     socket.on("move_error", (error) => {
       if (error === 'Player token invalid or expired') return requestPlayerToken(gamePath);

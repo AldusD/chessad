@@ -13,6 +13,9 @@ function GameProvider({ children }) {
   const [gameSettings, setGameSettings] = useState({});
   const [newMove, setNewMove] = useState([]);
   const [position, setPosition] = useState({});
+  const [playersTimes, setPlayersTimes] = useState({});
+  const [moveNumber, setMoveNumber] = useState(0);
+  const [existDrawOffer, setExistDrawOffer] = useState(false);
 
   return (
     <GameContext.Provider value={{ 
@@ -20,6 +23,9 @@ function GameProvider({ children }) {
       gameSettings, setGameSettings, 
       newMove, setNewMove, 
       position, setPosition,
+      playersTimes, setPlayersTimes,
+      moveNumber, setMoveNumber,
+      existDrawOffer, setExistDrawOffer,
       STATUS }}>
       {children}
     </GameContext.Provider>

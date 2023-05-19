@@ -6,6 +6,7 @@ import Events from "../../eventEnums";
 
 function joinGame (io: Server, socket: Socket) {
   return (data: { playerToken: string }) => {
+    if (!data || !data.playerToken) return io.in(socket.id).emit(Events.ERROR, 'Player token invalid or expired');
     const { tokenData, error } = verifyPlayerToken(data.playerToken);  
     if (error) {
       return io.in(socket.id).emit(Events.ERROR, error.message);

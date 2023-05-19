@@ -6,6 +6,7 @@ const gameRouter = Router();
 const notImplement = (_: any, res: Response) => res.sendStatus(501);
 
 gameRouter.get("/", notImplement);
+gameRouter.patch("/", notImplement);
 gameRouter.get("/:path", getGameByPath);
 gameRouter.get("/:path/token", verifyToken, getPlayerToken);
 gameRouter.post("/join", verifyToken, postJoinGame);

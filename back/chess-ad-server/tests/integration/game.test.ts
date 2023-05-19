@@ -6,7 +6,7 @@ import app, { init } from "../../src/app";
 import { prisma } from "../../src/config";
 import { cleanDb } from "../helpers";
 import { createUser, createGameSetting, createGame } from "../factories";
-import { createToken, TokenTypes } from "../../src/utils/token";
+import { createToken, TokenTypes, Results } from "../../src/utils/token";
 
 beforeAll(async () => {
   await init();
@@ -195,4 +195,37 @@ describe("GET /game/:path/token", () => {
       expect(typeof(response.body.playerToken)).toBe('string');
     });
   })
+});
+
+describe("PATCH /game", () => {
+  it("should respond with status 422 if no resultToken given", async () => {
+    const response = await server.patch("/game");
+    
+    expect(response.status).toBe(httpStatus.UNPROCESSABLE_ENTITY);
+  });
+
+  it("should respond with status 422 if no resultToken is not valid", async () => {
+    const invalidResultToken = faker.lorem.word();    
+    const response = await server.patch("/game").send({ resultToken: invalidResultToken });
+    
+    expect(response.status).toBe(httpStatus.UNPROCESSABLE_ENTITY);
+  });
+
+  it("should respond with status 200 and corresponding data", async () => {
+    const whitePlayer = await createUser();
+    const blackPlayer = await createUser();
+    const whitePlayerId = whitePlayer.id;
+    const blackPlayerId = blackPlayer.id;
+    const game = await createGame({ whitePlayerId, blackPlayerId });
+    const results = [Results.BLACK, Results.TIE, Results.WHITE];
+    const result = results[Math.floor(Math.random() * 3)];
+    const pgn = faker.lorem.word();
+    const resultToken = createToken({ path: game.path, result, pgn });
+
+    const response = await server.get(`/game/${game.path}/token`).send({ resultToken });
+    const filledGame = await prisma.game.findUnique({ where: { path: game.path } });
+    
+    expect(response.status).toBe(httpStatus.OK);
+    expect(response.body).toEqual(filledGame);
+  });
 });

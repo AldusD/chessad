@@ -62,3 +62,14 @@ export async function getPlayerToken(req: Request, res: Response) {
     return res.sendStatus(httpStatus.UNPROCESSABLE_ENTITY);
   }
 }
+
+export async function PatchGame(req: Request, res: Response) {
+  const { resultToken } = req.body;
+
+  try {
+    const result = await gameService.finishGame(resultToken);
+    return res.status(httpStatus.OK).send({ game: result });
+  } catch (error) {
+    return res.status(httpStatus.UNPROCESSABLE_ENTITY).send(error.message);
+  }
+}

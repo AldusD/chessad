@@ -1,8 +1,9 @@
 import { Game, GameSetting } from "@prisma/client";
+import jwt from "jsonwebtoken";
 import gameSettingRepository from "../../repositories/gameSettingRepository";
 import gameRepository from "../../repositories/gameRepository";
 import { cannotJoinGameError, invalidPathError, unprocessableEntityError } from "../errors";
-import { PlayerTokenTypes, Teams, createToken } from "../../utils/token";
+import { PlayerTokenTypes, Results, Teams, createToken, getTokenDataOrFail } from "../../utils/token";
 
 type JoinGameParams = {
     userId: string,
@@ -64,10 +65,41 @@ async function sendPlayerToken(getTokenData: JoinGameParams): Promise<string> {
   return playerToken;
 }
 
+type ResultTokenData = {
+  pgn: string,
+  result: Results
+}
+
+type TokenVerificationResult = {
+  tokenData?: ResultTokenData,
+  error?: Error 
+}
+
+const verifyPlayerToken = (resultToken: string): TokenVerificationResult {
+  if (!resultToken) return { error: Error('Player token invalid or expired') };  
+  
+  const result = {} as TokenVerificationResult;
+  
+  getTokenDataOrFail(resultToken, (error: jwt.JsonWebTokenError, tokenData: PlayerTokenData) => {
+    if (error || !tokenData.path) return result.error = Error('Player token invalid or expired');
+    return result.tokenData = tokenData;
+  })
+  return result;
+}
+
+async function finishGame(resultToken: string): Promise<Game> {
+  const { tokenData, error } = verifyPlayerToken(resultToken);
+
+  const game = await gameRepository.findByPath(path);
+  if (!game) throw invalidPathError();
+  return game;
+}
+
 const gameService = {
   createGame,
   listGameByPath,
-  sendPlayerToken
+  sendPlayerToken,
+  finishGame
 };
 
 export default gameService;

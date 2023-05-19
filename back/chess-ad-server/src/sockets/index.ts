@@ -1,10 +1,12 @@
 import { Server, Socket } from "socket.io";
 import registerGameHandlers from "./controllers/gameJoinController";
-import gameplayHandlers from "./controllers/gameplayController";
+import registerGameplayHandlers from "./controllers/gameplayController";
+import registerGameActionsHandlers from "./controllers/gameActionsController";
 
 const connectServices = (io: Server, socket: Socket) => {
   registerGameHandlers(io, socket);
-  gameplayHandlers(io, socket);
+  registerGameplayHandlers(io, socket);
+  registerGameActionsHandlers(io, socket);
 }
 
 export default connectServices;

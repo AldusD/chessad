@@ -8,7 +8,8 @@ export enum Errors {
   unauthorizedError,
   cannotJoinGameError,
   unprocessableEntityError,
-  InvalidDataError
+  InvalidDataError,
+  invalidTokenError
 }
 
 export function invalidPathError(): ApplicationError {
@@ -23,7 +24,7 @@ export function conflictError(conflictField: string): ApplicationError {
       name: Errors.conflictError,
       message: `There is already an user to given ${conflictField}`,
     };
-  }
+}
   
 export function invalidCredentialsError(): ApplicationError {
   return {
@@ -58,4 +59,11 @@ export function unprocessableEntityError(message?: string): ApplicationError {
       name: Errors.unprocessableEntityError,
       message: message || 'invalid data',
     };
-  }
+}
+
+export function invalidTokenError(): ApplicationError {
+  return {
+    name: Errors.invalidTokenError,
+    message: "Token sent is invalid"
+  };
+}
