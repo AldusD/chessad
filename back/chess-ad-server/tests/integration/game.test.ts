@@ -222,7 +222,7 @@ describe("PATCH /game", () => {
     const pgn = faker.lorem.word();
     const resultToken = createToken({ path: game.path, result, pgn });
 
-    const response = await server.get(`/game/${game.path}/token`).send({ resultToken });
+    const response = await server.patch('/game').send({ resultToken });
     const filledGame = await prisma.game.findUnique({ 
       where: { 
         path: game.path 
@@ -246,6 +246,6 @@ describe("PATCH /game", () => {
     });
     
     expect(response.status).toBe(httpStatus.OK);
-    expect(response.body).toEqual(filledGame);
+    expect(response.body.game).toEqual({ ...filledGame, createdAt: game.createdAt.toISOString() });
   });
 });

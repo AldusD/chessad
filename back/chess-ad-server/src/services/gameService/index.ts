@@ -77,7 +77,7 @@ type TokenVerificationResult = {
 }
 
 const verifyPlayerToken = (resultToken: string): TokenVerificationResult => {
-  if (!resultToken) return { error: Error('Player token invalid or expired') };  
+  if (!resultToken) return { error: Error('Result token invalid or expired') };  
   
   const result = {} as TokenVerificationResult;
   
