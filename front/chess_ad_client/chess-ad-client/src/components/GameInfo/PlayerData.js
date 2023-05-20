@@ -29,6 +29,7 @@ export default function PlayerData ({ profilePicture, username, color, showOptio
   const startTimer = () => {
     if (!playersTimes || playersTimes.turn != color) return;
     timer.current = setInterval(() => {
+      console.log(gameStatus)
       if (time > 0) setTime((curr) => curr - 900);
     }, 900);
   }
@@ -49,6 +50,7 @@ export default function PlayerData ({ profilePicture, username, color, showOptio
   useEffect(() => {
     const points = (gameStatus === color) ? 1 : (gameStatus === STATUS.TIE) ? '1/2' : '0';
     setScore(points);
+    if (gameStatus != STATUS.ONGOING) stopTimer();
   }, [gameStatus])
 
   return (

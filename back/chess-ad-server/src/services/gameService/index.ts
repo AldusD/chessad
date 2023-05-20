@@ -92,8 +92,9 @@ async function finishGame(resultToken: string): Promise<Game> {
   const { tokenData, error } = verifyPlayerToken(resultToken);
   if (error) throw invalidTokenError();
   const { path, result, pgn } = tokenData;
+  const points = (result === Results.TIE) ? '1/2-1/2' : (result === Results.WHITE) ? '1-0' : '0-1';
 
-  const game = await gameRepository.updateByPath({ path, result, pgn });
+  const game = await gameRepository.updateByPath({ path, result: points, pgn });
   if (!game) throw invalidPathError();  
 
   return game;

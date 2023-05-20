@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { GamePageStyles, GameContainer } from "./styles";
+import { GamePageStyles, GameContainer, GameResult } from "./styles";
 import Chessboard from "../../ChessSet/Chessboard";
 import PlayerData from "../../GameInfo/PlayerData";
 import Guest from "../../../assets/guest.jpg";
 import Header from "../../Header";
-import { useGetGameByPath } from "../../../hooks/api/useGame";
-import { usePlayerToken } from "../../../hooks/api/useGame";
+import { useGetGameByPath, usePlayerToken, useFinishGame } from "../../../hooks/api/useGame";
 import { useGame } from "../../../contexts/GameContext"; 
 import { useUser } from "../../../contexts/UserContext";
 import { useNewTokens } from "../../../hooks/api/useAuthentication";
@@ -18,14 +17,20 @@ export default function Game () {
   const { player, opponent, pointOfView,  } = gameSettings || '';
   const gamePath = useParams().gamePath;
   const [teams, setTeams] = useState(['white', 'black']);
+  const [gameResult, setGameResult] = useState({});
   const navigate = useNavigate();
   const { socket } = useSocket();
-  const { newMove, setNewMove, setPosition, setPlayersTimes, setExistDrawOffer } = useGame();
+  const { newMove, setNewMove, setPosition, setPlayersTimes, setExistDrawOffer, setGameStatus } = useGame();
 
   const {
     mutate: requestGameData,
     data: gameData
   } = useGetGameByPath();
+
+  const {
+    mutate: requestFinishGame,
+    data: closedGameData,
+  } = useFinishGame();
   
   const {
     mutate: requestPlayerToken,
@@ -47,7 +52,25 @@ export default function Game () {
     if (gameData && gameData.game) {
       if (gameData.game.blackPlayer.username == userData.username) setTeams(['black', 'white']);
     }
+
+    if (gameData && gameData.game && !gameData.game.isOpen) {
+      if (gameData.game.result === '1/2-1/2') {
+        setGameResult({ points: '1/2-1/2', userResult: 'Tied' });
+      } else {
+        const result = gameData.game.result;
+        const userWantedResult = (gameData.game.blackPlayer.username == userData.username) ? '0' : '1';
+        const userResult = (result[0] === userWantedResult) ? 'Won' : 'Lost';  
+        setGameResult({ points: result, userResult });
+      }
+      const status = (gameData.game.result === '1/2-1/2') ? 'tie' : (gameData.game.result === '1-0') ? 'white' : 'black';
+      setGameStatus(status);
+    }
   }, [gameData])
+
+  useEffect(() => {
+    if (gameData?.game.isOpen) requestGameData(gamePath);
+    setGameResult({ points: true });
+  }, [closedGameData]);
 
   useEffect(() => {
     if (newTokensData === 'refresh token expired or invalid') navigate('/');
@@ -81,7 +104,9 @@ export default function Game () {
       if (message === 'canceled') setExistDrawOffer(false);
     })
     
-    socket.on("game_result", (resultToken) => console.log('idx79_gr', resultToken));
+    socket.on("game_result", (resultToken) => {
+      if (!gameResult.points) requestFinishGame(resultToken);
+    });
 
     socket.on("move_error", (error) => {
       if (error === 'Player token invalid or expired') return requestPlayerToken(gamePath);
@@ -125,6 +150,16 @@ export default function Game () {
         showOptions={true} 
         initialTime={ gameData.game.time } />
       </div> 
+      :
+      <></>
+    }
+    { (gameResult && gameResult.userResult) ? 
+      <GameResult>
+        <span>You {gameResult.userResult}</span>
+        <span>{gameResult.points}</span>
+        <img src={userData.profilePicture || Guest} alt={userData.username} />
+        <button onClick={() => navigate('/home')} >Go back</button>
+      </GameResult>
       :
       <></>
     }

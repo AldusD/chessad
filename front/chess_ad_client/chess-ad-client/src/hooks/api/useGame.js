@@ -9,7 +9,7 @@ const listGameByPath = async (path) => {
   const options = { 
     headers: { 
       'Content-Type': 'application/json'
-      }, 
+    }, 
     method: 'GET' 
   };
 
@@ -47,6 +47,20 @@ const joinGame = async (path) => {
   return data;
 }
 
+const finishGame = async (resultToken) => {
+  const options = { 
+    headers: { 
+      'Content-Type': 'application/json', 
+    }, 
+    method: 'PATCH', 
+    body: JSON.stringify({ resultToken }) 
+  };
+
+  const response = await fetch(`${API}/game`, options);
+  const data = response.text();
+  return data;
+}
+
 export function useJoinGame () {
   const savePlayerToken = (data) => {
     if (data[0] !== '{') return;
@@ -67,4 +81,8 @@ export function usePlayerToken () {
     }
   
     return useMutation(getPlayerToken, { onSuccess: fillToken });  
-  }
+}
+
+export function useFinishGame () {
+  return useMutation(finishGame);
+}
