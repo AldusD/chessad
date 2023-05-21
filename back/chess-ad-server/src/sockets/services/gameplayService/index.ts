@@ -119,7 +119,7 @@ const tryStatus = async (statusInfo: StatusInfo): Promise<TryStatusResult> => {
 function movePiece (io: Server, socket: Socket) {
   return async (data: { playerToken: string, moveDetails: MoveDetails }) => {
     if (!data || !data.playerToken) return io.in(socket.id).emit(Events.MOVE_ERROR, 'Player token invalid or expired');
-    if (!data.moveDetails || !data.moveDetails.move || !(data.moveDetails.move.length === 2) || typeof(data.moveDetails.promote) == 'undefined' || typeof(data.moveDetails.usingSpell) == 'undefined' ) {
+    if (!data.moveDetails || !data.moveDetails.move || !(data.moveDetails.move.length === 2) || typeof(data.moveDetails.usingSpell) == 'undefined' ) {
       return io.in(socket.id).emit(Events.MOVE_ERROR, 'Invalid move details');
     }
     
