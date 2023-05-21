@@ -9,10 +9,11 @@ import PromotionModal from "./PromotionModal";
 export default function Square (props) {
   const { coordinates, color, pieces, setPieces, selectedSquare, setSelectedSquare, usingSpell, setUsingSpell, promotion, setPromotion, refresh, pointOfView } = props;
   const [move] = useMovePieces();
-  const { setGameStatus, STATUS } = useGame();
+  const [showPromotionModal, setShowPromotionModal] = useState(promotion[0] === coordinates);
+  const { setGameStatus, STATUS, setNewMove, setMoveNumber } = useGame();
   
   const movePiece = info => {
-    setPromotion([false, '']);
+    setPromotion((curr) => [false, '']);
     
     const moveInfo = move({ 
       coordI: info.selectedSquare, 
@@ -24,13 +25,15 @@ export default function Square (props) {
     
     if(!moveInfo.error) {
       setPieces(moveInfo.position);
+      setNewMove({ move: [info.selectedSquare, info.coordinates], usingSpell: info.usingSpell, promote: info.promote });
+      setMoveNumber((curr) => curr + 1);
       setUsingSpell(false);
       if(moveInfo.checkmate) setGameStatus(STATUS[moveInfo.checkmate]);
       refresh.set(!refresh.value);
       return setSelectedSquare(null);
       
     } else {
-      setPromotion(false, '');
+      setPromotion((curr) => false, '');
       return setSelectedSquare(coordinates);
     }
   }
@@ -51,37 +54,36 @@ export default function Square (props) {
     }  
 
     setSelectedSquare(coordinates);
-    }
+  }
     
-    return (
-        <SquareStyle 
-          onClick={() => selectSquare()}
-          onBlur={() => setPromotion([false, ''])}
-          isSelected={selectedSquare === coordinates}
-          color={color} >
-
-          {(selectedSquare === coordinates) ? <SelectedFilter /> : <></>}
-          {(pieces && pieces[coordinates]) ? 
-            <Piece
-              pieceInfo={{...pieces[coordinates]}} 
-              move={pieces.move} 
-              refresh={refresh} />
-            :
-            <></>    
-          }
-          {(promotion[0] === coordinates) ? 
-            <PromotionModal 
-              color={(pieces.move % 2 === 0) ? 'black' : 'white'} 
-              setPromotion={setPromotion} 
-              movePiece={movePiece}
-              selectedSquare={selectedSquare}
-              coordinates={coordinates}
-              position={pieces} 
-              usingSpell={usingSpell} 
-              pointOfView={pointOfView} /> 
-            : 
-            <></>
-          }
-        </SquareStyle>
-    )
+  return (
+      <SquareStyle 
+        onClick={() => selectSquare()}
+        onBlur={() => setPromotion([false, ''])}
+        isSelected={selectedSquare === coordinates}
+        color={color} >
+       {(selectedSquare === coordinates) ? <SelectedFilter /> : <></>}
+        {(pieces && pieces[coordinates]) ? 
+          <Piece
+            pieceInfo={{...pieces[coordinates]}} 
+            move={pieces.move} 
+            refresh={refresh} />
+          :
+          <></>    
+        }
+        {(promotion[0] === coordinates) ? 
+          <PromotionModal 
+            color={(pieces.move % 2 === 0) ? 'black' : 'white'} 
+            setPromotion={setPromotion} 
+            movePiece={movePiece}
+            selectedSquare={selectedSquare}
+            coordinates={coordinates}
+            position={pieces} 
+            usingSpell={usingSpell} 
+            pointOfView={pointOfView} /> 
+          : 
+          <></>
+        }
+      </SquareStyle>
+  )
 }

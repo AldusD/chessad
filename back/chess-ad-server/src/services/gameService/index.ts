@@ -1,8 +1,9 @@
 import { Game, GameSetting } from "@prisma/client";
+import jwt from "jsonwebtoken";
 import gameSettingRepository from "../../repositories/gameSettingRepository";
 import gameRepository from "../../repositories/gameRepository";
-import { cannotJoinGameError, invalidPathError, unprocessableEntityError } from "../errors";
-import { PlayerTokenTypes, Teams, createToken } from "../../utils/token";
+import { cannotJoinGameError, invalidPathError, unprocessableEntityError, invalidTokenError } from "../errors";
+import { PlayerTokenTypes, Results, Teams, createToken, getTokenDataOrFail } from "../../utils/token";
 
 type JoinGameParams = {
     userId: string,
@@ -25,7 +26,7 @@ async function createGame(createGameParams: JoinGameParams) {
   const game = await gameRepository.create({ path, time, increment, whitePlayerId: teams[0], blackPlayerId: teams[1] });
   await gameSettingRepository.deleteByPath(path);
   
-  const playerToken = createToken({ type: PlayerTokenTypes.joiningPlayer, path }, '10d');
+  const playerToken = createToken({ type: PlayerTokenTypes.joiningPlayer, path, timeControl: [gameSetting.time, gameSetting.increment] }, '10d');
   return playerToken;
 }
 
@@ -59,15 +60,51 @@ async function sendPlayerToken(getTokenData: JoinGameParams): Promise<string> {
   if (!game) throw invalidPathError();
   if(userId !== game.whitePlayerId && userId !== game.blackPlayerId) throw cannotJoinGameError('User is not signed as player of this game');
   const team = (userId === game.whitePlayerId) ? Teams.white : Teams.black;
-  const playerToken = createToken({ type: PlayerTokenTypes.joiningPlayer, path, team }, '10d');
+  const playerToken = createToken({ type: PlayerTokenTypes.joiningPlayer, path, team, timeControl: [game.time, game.increment] }, '10d');
 
   return playerToken;
+}
+
+type ResultTokenData = {
+  pgn: string,
+  result: Results,
+  path: string
+}
+
+type TokenVerificationResult = {
+  tokenData?: ResultTokenData,
+  error?: Error 
+}
+
+const verifyPlayerToken = (resultToken: string): TokenVerificationResult => {
+  if (!resultToken) return { error: Error('Result token invalid or expired') };  
+  
+  const result = {} as TokenVerificationResult;
+  
+  getTokenDataOrFail(resultToken, (error: jwt.JsonWebTokenError, tokenData: ResultTokenData) => {
+    if (error || !tokenData.path) return result.error = Error('Player token invalid or expired');
+    return result.tokenData = tokenData;
+  })
+  return result;
+}
+
+async function finishGame(resultToken: string): Promise<Game> {
+  const { tokenData, error } = verifyPlayerToken(resultToken);
+  if (error) throw invalidTokenError();
+  const { path, result, pgn } = tokenData;
+  const points = (result === Results.TIE) ? '1/2-1/2' : (result === Results.WHITE) ? '1-0' : '0-1';
+
+  const game = await gameRepository.updateByPath({ path, result: points, pgn });
+  if (!game) throw invalidPathError();  
+
+  return game;
 }
 
 const gameService = {
   createGame,
   listGameByPath,
-  sendPlayerToken
+  sendPlayerToken,
+  finishGame
 };
 
 export default gameService;

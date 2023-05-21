@@ -85,3 +85,41 @@ export const OfferDrawButton = styled(FaRegHandshake)`
       background-color: green;
     }
 `;
+
+export const Options = styled.div`
+  display: flex;
+`;
+
+export const DrawOfferResponses = styled.div`
+  margin-left: 1rem;
+  background-color: #22DD22;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0.4rem;
+  font-size: 0.8rem;
+  border-radius: 2vh;
+  font-weight: 500;
+  
+  > span {
+    padding: 1vh 0;
+  }
+
+  > div {
+    display: flex;
+    justify-content: space-between;
+
+    > span {
+      background-color: greenyellow;
+      margin: 0 0.2rem;
+      padding: 0.2rem;
+      border-radius: 1vh;
+      cursor: pointer;
+      font-size: 0.7rem;
+    }
+
+    > span:hover {
+      background-color: #004499;
+      color: #AAFFAA;
+    }
+  }`
