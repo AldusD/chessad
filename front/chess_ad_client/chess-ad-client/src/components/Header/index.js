@@ -54,7 +54,8 @@ export default function Header () {
         <div>
           <div>
             <Link to='/home' ><img src={Logo} /></Link>
-            <Link to={`/users/${userData?.username || 'Guest'}`} ><Item>{userData?.username || 'Guest'}'s page</Item></Link>
+            <Link to={'/userPage'} ><Item>{userData?.username || 'Guest'}'s page</Item></Link>
+            <Link to='/home' ><Item>Home</Item></Link>
             <Link to='/howtoplay' ><Item>How to play</Item></Link> 
             <Item>Contact</Item>
           </div>

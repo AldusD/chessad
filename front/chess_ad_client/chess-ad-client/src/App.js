@@ -1,7 +1,9 @@
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { QueryClientProvider, QueryClient } from 'react-query';
 import logo from './logo.svg';
 import './App.css';
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import MainPage from './components/pages/MainPage';
+import UserPage from './components/pages/UserPage';
 import HowToPlay from './components/pages/HowToPlay';
 import Home from './components/pages/Home';
 import Game from './components/pages/Game';
@@ -9,7 +11,6 @@ import WaitingRoom from './components/pages/WaitingRoom';
 import { GameProvider } from "./contexts/GameContext";
 import { UserProvider } from './contexts/UserContext';
 import { SocketProvider } from './contexts/SocketContext';
-import { QueryClientProvider, QueryClient } from 'react-query';
 
 function App() {
   const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ function App() {
         <BrowserRouter >
           <Routes>
             <Route path='/' element={ <MainPage /> } />
+            <Route path='/userPage' element={ <UserPage /> } />
             <Route path='/howtoplay' element={ <HowToPlay /> } />
             <Route path='/home' element={ <Home /> } />
             <Route path="/games/join/:gamePath" element={ <WaitingRoom /> } />
