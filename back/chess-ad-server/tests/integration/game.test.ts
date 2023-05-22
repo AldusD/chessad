@@ -15,16 +15,127 @@ beforeAll(async () => {
 
 const server = supertest(app);
 
+describe("GET /game", () => {
+  it("should respond with status 400 if no user for given username", async () => {
+    const invalidUsername = faker.lorem.word();
+    const response = await server.get('/game').send({ username: invalidUsername });
+
+    expect(response.status).toBe(httpStatus.BAD_REQUEST);
+  });
+
+  it("should respond with status 200 and an empty array", async () => {
+    const response = await server.get('/game');
+
+    expect(response.status).toBe(httpStatus.OK);
+    expect(response.body.game).toEqual([]);
+  });
+
+  it("should respond with status 200 and corresponding data (no username passed)", async () => {
+    const whitePlayer = await createUser();
+    const blackPlayer = await createUser();
+    const whitePlayerId = whitePlayer.id;
+    const blackPlayerId = blackPlayer.id;
+    const game = await createGame({ whitePlayerId, blackPlayerId });
+    
+    const response = await server.get('/game');
+
+    expect(response.status).toBe(httpStatus.OK);
+    expect(response.body.game).toEqual(
+      [{ 
+        ...game, 
+        createdAt: game.createdAt.toISOString(), 
+        whitePlayer: {
+          username: whitePlayer.username,
+          email: whitePlayer.email,
+          profilePicture: whitePlayer.profilePicture
+        },
+        blackPlayer: {
+          username: blackPlayer.username,
+          email: blackPlayer.email,
+          profilePicture: blackPlayer.profilePicture
+        }
+      }]);
+  });
+
+  it("should respond with status 200 and an empty array (user with no games)", async () => {
+    const whitePlayer = await createUser();
+    const blackPlayer = await createUser();
+    const whitePlayerId = whitePlayer.id;
+    const blackPlayerId = blackPlayer.id;
+    const userWithoutGames = await createUser();
+    const game = await createGame({ whitePlayerId, blackPlayerId });
+    
+    const response = await server.get('/game').send({ username: userWithoutGames.username });
+
+    expect(response.status).toBe(httpStatus.OK);
+    expect(response.body.game).toEqual([]);
+  });
+
+  it("should respond with status 200 and corresponding data (as white)", async () => {
+    const whitePlayer = await createUser();
+    const blackPlayer = await createUser();
+    const whitePlayerId = whitePlayer.id;
+    const blackPlayerId = blackPlayer.id;
+    const game = await createGame({ whitePlayerId, blackPlayerId });
+    
+    const response = await server.get('/game').send({ username: whitePlayer.username });
+
+    expect(response.status).toBe(httpStatus.OK);
+    expect(response.body.game).toEqual(
+      [{ 
+        ...game, 
+        createdAt: game.createdAt.toISOString(), 
+        whitePlayer: {
+          username: whitePlayer.username,
+          email: whitePlayer.email,
+          profilePicture: whitePlayer.profilePicture
+        },
+        blackPlayer: {
+          username: blackPlayer.username,
+          email: blackPlayer.email,
+          profilePicture: blackPlayer.profilePicture
+        }
+      }]);
+  });
+  
+  it("should respond with status 200 and corresponding data (as black)", async () => {
+    const whitePlayer = await createUser();
+    const blackPlayer = await createUser();
+    const whitePlayerId = whitePlayer.id;
+    const blackPlayerId = blackPlayer.id;
+    const game = await createGame({ whitePlayerId, blackPlayerId });
+    
+    const response = await server.get('/game').send({ username: blackPlayer.username });
+
+    expect(response.status).toBe(httpStatus.OK);
+    expect(response.body.game).toEqual(
+      [{ 
+        ...game, 
+        createdAt: game.createdAt.toISOString(), 
+        whitePlayer: {
+          username: whitePlayer.username,
+          email: whitePlayer.email,
+          profilePicture: whitePlayer.profilePicture
+        },
+        blackPlayer: {
+          username: blackPlayer.username,
+          email: blackPlayer.email,
+          profilePicture: blackPlayer.profilePicture
+        }
+      }]);
+  }); 
+})
+
 describe("POST /game/join", () => {
   it("should respond with status 401 if no token is given", async () => {
-    const response = await server.post(`/game/join`);
+    const response = await server.post('/game/join');
     
     expect(response.status).toBe(httpStatus.UNAUTHORIZED);
   });  
   
   it("should respond with status 401 if given access token is not valid", async () => {
     const accessToken = faker.lorem.word();
-    const response = await server.post(`/game/join`).set("Authorization", `Bearer ${accessToken}`);  
+    const response = await server.post('/game/join').set("Authorization", `Bearer ${accessToken}`);  
     
     expect(response.status).toBe(httpStatus.UNAUTHORIZED);
   });
@@ -33,7 +144,7 @@ describe("POST /game/join", () => {
     it("should respond with status 422 if no path given", async () => {
       const user = await createUser();
       const accessToken = createToken({ userId: user.id, type: TokenTypes.access });
-      const response = await server.post(`/game/join`).set("Authorization", `Bearer ${accessToken}`);
+      const response = await server.post('/game/join').set("Authorization", `Bearer ${accessToken}`);
       
       expect(response.status).toBe(httpStatus.UNPROCESSABLE_ENTITY);
     }); 
@@ -42,7 +153,7 @@ describe("POST /game/join", () => {
       const user = await createUser();
       const accessToken = createToken({ userId: user.id, type: TokenTypes.access });
       const invalidPath = faker.lorem.word();
-      const response = await server.post(`/game/join`)
+      const response = await server.post('/game/join')
         .set("Authorization", `Bearer ${accessToken}`)
         .send({ path: invalidPath });
       
@@ -54,7 +165,7 @@ describe("POST /game/join", () => {
         const user = await createUser();
         const accessToken = createToken({ userId: user.id, type: TokenTypes.access });
         const gameSetting = await createGameSetting({ userId: user.id });
-        const response = await server.post(`/game/join`)
+        const response = await server.post('/game/join')
           .set("Authorization", `Bearer ${accessToken}`)
           .send({ path: gameSetting.path });
       
@@ -66,7 +177,7 @@ describe("POST /game/join", () => {
         const creatorUser = await createUser();
         const accessToken = createToken({ userId: JoiningUser.id, type: TokenTypes.access });
         const gameSetting = await createGameSetting({ userId: creatorUser.id });
-        const response = await server.post(`/game/join`)
+        const response = await server.post('/game/join')
           .set("Authorization", `Bearer ${accessToken}`)
           .send({ path: gameSetting.path });
 
