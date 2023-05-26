@@ -7,6 +7,7 @@ import UserPage from './components/pages/UserPage';
 import HowToPlay from './components/pages/HowToPlay';
 import Home from './components/pages/Home';
 import Game from './components/pages/Game';
+import ViewGamePage from './components/pages/ViewGamePage';
 import WaitingRoom from './components/pages/WaitingRoom';
 import { GameProvider } from "./contexts/GameContext";
 import { UserProvider } from './contexts/UserContext';
@@ -29,6 +30,7 @@ function App() {
             <Route path='/home' element={ <Home /> } />
             <Route path="/games/join/:gamePath" element={ <WaitingRoom /> } />
             <Route path="/games/play/:gamePath" element={ <Game /> } />
+            <Route path="/games/view/:gamePath" element={ <ViewGamePage /> } />
             <Route path='*' element={ <span>Not Found :/</span> } />
           </Routes>
         </BrowserRouter>

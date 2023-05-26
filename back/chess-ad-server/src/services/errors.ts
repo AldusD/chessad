@@ -9,7 +9,8 @@ export enum Errors {
   cannotJoinGameError,
   unprocessableEntityError,
   InvalidDataError,
-  invalidTokenError
+  invalidTokenError,
+  cannotFindUser
 }
 
 export function invalidPathError(): ApplicationError {
@@ -65,5 +66,12 @@ export function invalidTokenError(): ApplicationError {
   return {
     name: Errors.invalidTokenError,
     message: "Token sent is invalid"
+  };
+}
+
+export function cannotFindUser(): ApplicationError {
+  return {
+    name: Errors.cannotFindUser,
+    message: "Username does not correspond to an active user"
   };
 }

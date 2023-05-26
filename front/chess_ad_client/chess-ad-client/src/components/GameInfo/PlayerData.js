@@ -29,7 +29,6 @@ export default function PlayerData ({ profilePicture, username, color, showOptio
   const startTimer = () => {
     if (!playersTimes || playersTimes.turn != color) return;
     timer.current = setInterval(() => {
-      console.log(gameStatus)
       if (time > 0) setTime((curr) => curr - 900);
     }, 900);
   }

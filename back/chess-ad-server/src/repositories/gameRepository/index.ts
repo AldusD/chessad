@@ -44,6 +44,80 @@ async function findByPath(path: string) {
   }
 }
 
+async function findClosedByUsername(username: string) {
+  try {
+    const games = await prisma.game.findMany({ 
+      where: {
+        isOpen: false,
+        OR: [
+          {
+            whitePlayer: {
+              username
+            }
+          },
+          {
+            blackPlayer: {
+              username
+            }
+          }
+        ] 
+      },
+      include: {
+        whitePlayer: {
+          select: {
+            email: true,
+            username: true,
+            profilePicture: true,
+          }
+        },
+        blackPlayer: {
+          select: {
+            email: true,
+            username: true,
+            profilePicture: true,
+          }
+        }
+      },
+      orderBy: [
+        { createdAt: 'desc' }
+      ]
+    });
+    return games;
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+async function findAllClosed() {
+  try {
+    const game = await prisma.game.findMany({ 
+      where: { isOpen: false },
+      include: {
+        whitePlayer: {
+          select: {
+            email: true,
+            username: true,
+            profilePicture: true,
+          }
+        },
+        blackPlayer: {
+          select: {
+            email: true,
+            username: true,
+            profilePicture: true,
+          }
+        }
+      },
+      orderBy: [
+        { createdAt: 'desc' }
+      ]
+    });
+    return game;
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 async function updateByPath(finalGameParams: UpdateGameParams) {
   const { path, result, pgn } = finalGameParams;
   try {
@@ -82,6 +156,8 @@ async function updateByPath(finalGameParams: UpdateGameParams) {
 const gameRepository = {
   create,
   findByPath,
+  findClosedByUsername,
+  findAllClosed,
   updateByPath
 };
 

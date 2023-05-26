@@ -18,6 +18,19 @@ const listGameByPath = async (path) => {
   return data;
 }
 
+const listGames = async (username) => {
+  const options = { 
+    headers: { 
+      'Content-Type': 'application/json'
+    },
+    method: 'GET' 
+  };
+
+  const response = await fetch(`${API}/game?u=${(username) ? username : ''}`, options);
+  const data = response.json();
+  return data;
+}
+
 const getPlayerToken = async (path) => {
     const options = { 
       headers: { 
@@ -68,6 +81,10 @@ export function useJoinGame () {
   }
 
   return useMutation(joinGame, { onSuccess: savePlayerToken });
+}
+
+export function useGetGames () {
+  return useMutation(listGames);
 }
 
 export function useGetGameByPath () {

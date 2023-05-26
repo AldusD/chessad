@@ -34,7 +34,7 @@ export default function Login({ setSelectedForm }) {
     const login = async() => {
         try {
           const { username, email, password } = form;
-          const result = await signinForm({ email, password });
+          signinForm({ email, password });
         } catch(error) {
           console.log('err', error);
         }
@@ -68,7 +68,7 @@ export default function Login({ setSelectedForm }) {
         <Form direction={'column'} inputSize='70%' >
           {signinData ? 
             <FieldError width={'80%'} >
-              {(signinData === 'Unauthorized') ? 
+              {(signinData == 'Unauthorized' || signinData == 'Email or password are incorrect') ? 
                 "email and password don't match" 
                 : 
                 (signinData === 'Unprocessable Entity') ? 

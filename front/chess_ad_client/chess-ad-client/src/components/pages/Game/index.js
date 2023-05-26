@@ -17,10 +17,12 @@ export default function Game () {
   const { player, opponent, pointOfView,  } = gameSettings || '';
   const gamePath = useParams().gamePath;
   const [teams, setTeams] = useState(['white', 'black']);
-  const [gameResult, setGameResult] = useState({});
+  const [isGameClosed, setIsGameClosed] = useState(false);
+  const [gameResults, setGameResults] = useState([]);
   const navigate = useNavigate();
   const { socket } = useSocket();
   const { newMove, setNewMove, setPosition, setPlayersTimes, setExistDrawOffer, setGameStatus } = useGame();
+  
 
   const {
     mutate: requestGameData,
@@ -54,22 +56,22 @@ export default function Game () {
     }
 
     if (gameData && gameData.game && !gameData.game.isOpen) {
+      setIsGameClosed(curr => true);
       if (gameData.game.result === '1/2-1/2') {
-        setGameResult({ points: '1/2-1/2', userResult: 'Tied' });
+        setGameResults(curr => ['Tied', '1/2-1/2'])
       } else {
         const result = gameData.game.result;
         const userWantedResult = (gameData.game.blackPlayer.username == userData.username) ? '0' : '1';
         const userResult = (result[0] === userWantedResult) ? 'Won' : 'Lost';  
-        setGameResult({ points: result, userResult });
+        setGameResults(curr => [userResult, result]);
       }
       const status = (gameData.game.result === '1/2-1/2') ? 'tie' : (gameData.game.result === '1-0') ? 'white' : 'black';
-      setGameStatus(status);
+      setGameStatus(curr => status);
     }
   }, [gameData])
 
   useEffect(() => {
-    if (gameData?.game.isOpen) requestGameData(gamePath);
-    setGameResult({ points: true });
+    requestGameData(gamePath);
   }, [closedGameData]);
 
   useEffect(() => {
@@ -95,20 +97,26 @@ export default function Game () {
 
   useEffect(() => {
     socket.on("position", (positionData) => {
+      if (isGameClosed) return;
       if (positionData.position) setPosition(JSON.parse(positionData.position));
       if (positionData.status?.whitePlayerTime && positionData.status?.blackPlayerTime && positionData.status?.turn ) setPlayersTimes(positionData.status);
     });
 
     socket.on("offer_draw", (message) => {
+      if (isGameClosed) return;
       if (message === 'draw') setExistDrawOffer(true);
       if (message === 'canceled') setExistDrawOffer(false);
     })
     
     socket.on("game_result", (resultToken) => {
-      if (!gameResult.points) requestFinishGame(resultToken);
+      if (!isGameClosed) {
+        requestFinishGame(resultToken);
+        setIsGameClosed(curr => true);
+      }
     });
 
     socket.on("move_error", (error) => {
+      if (isGameClosed) return;
       if (error === 'Player token invalid or expired') return requestPlayerToken(gamePath);
       return socket.emit("position", { playerToken: localStorage.getItem('playerToken') });
     });
@@ -153,10 +161,10 @@ export default function Game () {
       :
       <></>
     }
-    { (gameResult && gameResult.userResult) ? 
+    { (isGameClosed) ? 
       <GameResult>
-        <span>You {gameResult.userResult}</span>
-        <span>{gameResult.points}</span>
+        <span>You {gameResults[0]}</span>
+        <span>{gameResults[1]}</span>
         <img src={userData.profilePicture || Guest} alt={userData.username} />
         <button onClick={() => navigate('/home')} >Go back</button>
       </GameResult>

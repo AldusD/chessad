@@ -16,13 +16,6 @@ beforeAll(async () => {
 const server = supertest(app);
 
 describe("GET /game", () => {
-  it("should respond with status 400 if no user for given username", async () => {
-    const invalidUsername = faker.lorem.word();
-    const response = await server.get('/game').send({ username: invalidUsername });
-
-    expect(response.status).toBe(httpStatus.BAD_REQUEST);
-  });
-
   it("should respond with status 200 and an empty array", async () => {
     const response = await server.get('/game');
 
@@ -65,7 +58,7 @@ describe("GET /game", () => {
     const userWithoutGames = await createUser();
     const game = await createGame({ whitePlayerId, blackPlayerId });
     
-    const response = await server.get('/game').send({ username: userWithoutGames.username });
+    const response = await server.get(`/game?u=${userWithoutGames.username}`);
 
     expect(response.status).toBe(httpStatus.OK);
     expect(response.body.game).toEqual([]);
@@ -78,7 +71,7 @@ describe("GET /game", () => {
     const blackPlayerId = blackPlayer.id;
     const game = await createGame({ whitePlayerId, blackPlayerId });
     
-    const response = await server.get('/game').send({ username: whitePlayer.username });
+    const response = await server.get(`/game?u=${whitePlayer.username}`);
 
     expect(response.status).toBe(httpStatus.OK);
     expect(response.body.game).toEqual(
@@ -105,7 +98,7 @@ describe("GET /game", () => {
     const blackPlayerId = blackPlayer.id;
     const game = await createGame({ whitePlayerId, blackPlayerId });
     
-    const response = await server.get('/game').send({ username: blackPlayer.username });
+    const response = await server.get(`/game?u=${blackPlayer.username}`);
 
     expect(response.status).toBe(httpStatus.OK);
     expect(response.body.game).toEqual(
