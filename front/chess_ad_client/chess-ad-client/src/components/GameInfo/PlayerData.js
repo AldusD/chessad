@@ -4,7 +4,7 @@ import GameOptions from "./GameOptions";
 import { useSocket } from "../../contexts/SocketContext"; 
 import { Data } from "./styles"
 
-export default function PlayerData ({ profilePicture, username, color, showOptions, isAnalysisBoard, initialTime }) {
+export default function PlayerData ({ profilePicture, username, color, showOptions, isAnalysisBoard, initialTime, pointOfView }) {
   const { gameStatus, STATUS, gameSettings, playersTimes } = useGame();
   const [score, setScore] = useState('0');
   const [time, setTime] = useState((initialTime) ? initialTime * 60 * 1000 : false);
@@ -51,6 +51,11 @@ export default function PlayerData ({ profilePicture, username, color, showOptio
     setScore(points);
     if (gameStatus != STATUS.ONGOING) stopTimer();
   }, [gameStatus])
+
+  useEffect(() => {
+    const points = (gameStatus === color) ? 1 : (gameStatus === STATUS.TIE) ? '1/2' : '0';
+    setScore(points);
+  }, [pointOfView])
 
   return (
       <Data>

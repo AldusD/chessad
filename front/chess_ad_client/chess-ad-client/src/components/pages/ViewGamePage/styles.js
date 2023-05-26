@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { BsArrowLeft } from "react-icons/bs";
 
 export const GameControls = styled.div`
   display: flex;
@@ -29,7 +30,8 @@ export const PgnContainer = styled.div`
     color: black;
     font-size: 0.6rem;
     font-weight: bold;
-    padding: 0.4vh 0.2vw;
+    height: 4vh;
+    padding: 0.4vh 0.4vw;
     margin: 1vh 0.4vw;
     border-radius: 1vh;
   }
@@ -50,4 +52,11 @@ export const PgnContainer = styled.div`
   ::-webkit-scrollbar-thumb:hover {
     background: #AAA;
   }
+`;
+
+export const MovePositionButton = styled(BsArrowLeft)`
+  color: white;
+  font-size: 1.2rem;
+  transform: rotate(${props => props.rotation + 'deg'});
+  margin: 2vh 0 -2vh 0;
 `;

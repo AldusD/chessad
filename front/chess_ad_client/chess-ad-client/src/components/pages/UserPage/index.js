@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import Guest from "../../../assets/guest.jpg";
 import LoadingQueen from "../../../assets/loading-queen.png";
 import { UserPageStyles, UserData, GamesContainer, Search, MagnifierIcon, GameHall } from "./styles";
@@ -59,11 +60,13 @@ export default function UserPage () {
           { (gamesLoading) ? <Loading size={'20vh'} src={LoadingQueen} /> : 
               (!gamesData || gamesData.length === 0) ? <div className="games-container" ><span>NO GAMES FOUND :/</span></div> : 
                 gamesData.map(game => 
-                  <div className="games-container" >
+                  
+                  <Link to={`/games/view/${game.path}`} ><div className="games-container" >
                     <span>{game.whitePlayer.username}</span> 
                     <span>{game.result}</span> 
                     <span>{game.blackPlayer.username}</span>
-                  </div>)
+                    <span>{game.time} + {game.increment}</span> 
+                  </div></Link>)
           }
         </GameHall>
       </GamesContainer>

@@ -84,6 +84,11 @@ export const GameHall = styled.div`
   border-radius: 0vh;
   overflow: auto;
 
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+
   ::-webkit-scrollbar {
     width: 0.4rem;
     }
@@ -122,9 +127,5 @@ export const GameHall = styled.div`
       font-size: 0.8rem;
       font-weight: bold;
     }
-   }
-
-  a {
-    text-decoration: none;
   }
 `;

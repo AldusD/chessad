@@ -46,12 +46,14 @@ export default function MainPage () {
             <PlayerData 
               profilePicture={Guest} 
               username={'Guest'} 
-              color={pointOfView === "white" ? "black" : "white"} 
+              color={pointOfView === "white" ? "black" : "white"}
+              pointOfView={pointOfView}
               showOptions={false} />
             <PlayerData 
               profilePicture={Guest}
               username={'Guest'} 
-              color={pointOfView} 
+              color={pointOfView}
+              pointOfView={pointOfView} 
               showOptions={true}
               isAnalysisBoard={true} />
           </div>

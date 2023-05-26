@@ -10,7 +10,7 @@ export default function Square (props) {
   const { coordinates, color, pieces, setPieces, selectedSquare, setSelectedSquare, usingSpell, setUsingSpell, promotion, setPromotion, refresh, pointOfView } = props;
   const [move] = useMovePieces();
   const [showPromotionModal, setShowPromotionModal] = useState(promotion[0] === coordinates);
-  const { setGameStatus, STATUS, setNewMove, setMoveNumber } = useGame();
+  const [setGameStatus, STATUS, setNewMove, setMoveNumber] = useGame();
   
   const movePiece = info => {
     setPromotion((curr) => [false, '']);
