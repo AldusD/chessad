@@ -4,7 +4,7 @@ import { useChessSet } from "./useChessSet";
 
 export function useViewGame () {
   const [move] = useMovePieces();
-  const [startPieces] = useChessSet();
+  const [_, startPieces]  = useChessSet();
   const initialPosition = startPieces();
 
   const extractMoveInfo = (move) => {
@@ -23,9 +23,8 @@ export function useViewGame () {
   }
   
   const gamePositions = (pgnArr) => {
-    const positionsArr = [];
     let pieces = initialPosition;
-
+    const positionsArr = [JSON.stringify(initialPosition)];
     for (let i = 0; i < pgnArr.length; i++) {
       const moveInfo = extractMoveInfo({ moveString: pgnArr[i], moveNumber: i });
       const newPosition = move({ ...moveInfo, pieces });

@@ -29,7 +29,7 @@ export default function UserPage () {
       setToSearchUser(curr => false);
       return requestGames();
     }
-    setToSearchUser(curr => false);
+    setToSearchUser(curr => '');
     setUserSearched(curr => toSearchUser);
     requestGames(toSearchUser);
   }
@@ -49,7 +49,7 @@ export default function UserPage () {
         <Search>
           <div>
             <span>Search for players games</span>
-            {openInput ? <input onChange={(e) => setToSearchUser(curr => e.target.value)} value={toSearchUser} placeholder='Send "all" to all games'></input> : <></>}
+            {openInput ? <input onChange={(e) => setToSearchUser(curr => e.target.value)} value={toSearchUser || ''} placeholder='Send "all" to all games'></input> : <></>}
             <MagnifierIcon onClick={handleSearch} />
           </div>
           <div>

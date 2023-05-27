@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { GameContainer, GamePageStyles } from "../Game/styles";
 import { PageStyle, Buttons, PovButton, ResetButton } from "../MainPage/styles";
-import { GameControls, PgnContainer, MovePositionButton } from "./styles";
+import { GameControls, PgnContainer, MovePositionButton, Pgn } from "./styles";
 import Header from "../../Header";
 import Guest from "../../../assets/guest.jpg"
 import Chessboard from "../../ChessSet/Chessboard";
@@ -17,7 +17,8 @@ export default function ViewGamePage () {
   const [reset, setReset] = useState(false);
   const [pgn, setPgn] = useState([]);
   const [positions, setPositions] = useState([]);
-  const [setPosition, setGameStatus, gameStatus, STATUS ] = useGame();
+  const [pgnIndex, setPgnIndex] = useState(-1);
+  const { setPosition, setGameStatus, gameStatus, STATUS } = useGame();
   const [gamePositions] = useViewGame();
   const [teams, setTeams] = useState(['white', 'black']);
   const {
@@ -27,11 +28,18 @@ export default function ViewGamePage () {
 
   const resetBoard = () => {
     setReset(!reset);
+    setPgnIndex(-1);
   }
 
   const changePov = (pov) => {
     setPointOfView(curr => pov);
     setTeams(curr => [pov, (pov === 'white') ? 'black' : 'white' ]);
+  }
+
+  const getPgnBg = (index) => {
+    if (pgnIndex > index) return "#777";
+    if (pgnIndex === index) return "#0C0";
+    return "whitesmoke";
   }
 
   useEffect(() => requestGameData(gamePath), [])
@@ -43,6 +51,8 @@ export default function ViewGamePage () {
     setGameStatus(curr => result);
     const pgnArr = gameData.game.pgn.split(", ");
     setPgn(curr => pgnArr);
+    const positionsArr = gamePositions(pgnArr);
+    setPositions(curr => positionsArr);
   }, [gameData])
 
   return (
@@ -52,12 +62,12 @@ export default function ViewGamePage () {
         <GameControls>
           <PgnContainer>
             {(!pgn) ? <></> : 
-              pgn.map((moveString, i) => <div key={moveString + i} >{moveString}</div>)
+              pgn.map((moveString, i) => <Pgn bg={getPgnBg(i)} onClick={() => setPgnIndex(i)} key={moveString + i} >{moveString}</Pgn>)
             }
           </PgnContainer>
           <Buttons>
-            <MovePositionButton onClick={resetBoard} rotation='0' />
-            <MovePositionButton onClick={resetBoard} rotation='180' />
+            <MovePositionButton onClick={() => setPgnIndex(curr => (curr == -1) ? curr : curr - 1)} rotation='0' />
+            <MovePositionButton onClick={() => setPgnIndex(curr => (curr == pgn.length - 1) ? curr : curr + 1)} rotation='180' />
           </Buttons>
           <Buttons>
             {(pointOfView === 'white') ? 
@@ -69,7 +79,7 @@ export default function ViewGamePage () {
           </Buttons>
         </GameControls>
         <GameContainer>
-          <Chessboard pointOfView={pointOfView} reset={reset} />
+          <Chessboard pointOfView={pointOfView} reset={reset} toInsertPosition={(positions[pgnIndex + 1]) ? JSON.parse(positions[pgnIndex + 1]) : false } />
           <div className="data-container">
             {(!gameData || !gameData.game) ? <></> : 
               <><PlayerData 

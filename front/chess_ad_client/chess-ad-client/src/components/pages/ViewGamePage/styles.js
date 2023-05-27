@@ -21,20 +21,6 @@ export const PgnContainer = styled.div`
   border-radius: 1rem;
   margin-top: 10vh;
   overflow: auto;
-
-  > div {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: whitesmoke;
-    color: black;
-    font-size: 0.6rem;
-    font-weight: bold;
-    height: 4vh;
-    padding: 0.4vh 0.4vw;
-    margin: 1vh 0.4vw;
-    border-radius: 1vh;
-  }
   
   ::-webkit-scrollbar {
   width: 0.2rem;
@@ -59,4 +45,18 @@ export const MovePositionButton = styled(BsArrowLeft)`
   font-size: 1.2rem;
   transform: rotate(${props => props.rotation + 'deg'});
   margin: 2vh 0 -2vh 0;
+`;
+
+export const Pgn = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: ${props => props.bg};
+  color: black;
+  font-size: 0.6rem;
+  font-weight: bold;
+  height: 4vh;
+  padding: 0.4vh 0.4vw;
+  margin: 1vh 0.4vw;
+  border-radius: 1vh;
 `;
