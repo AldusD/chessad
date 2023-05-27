@@ -75,7 +75,6 @@ export async function patchGame(req: Request, res: Response) {
 }
 
 export async function getGames(req: Request, res: Response) {
-  console.log(req.query.u)
   const username = req.query.u as string;
 
   try {

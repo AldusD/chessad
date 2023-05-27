@@ -70,7 +70,14 @@ const tryMove = async (moveInfo: MoveInfo): Promise<TryMoveResult> => {
       promote: moveDetails.promote,
       team: tokenData.team
     });
-    
+    console.log('idx73', { 
+      coordI: moveDetails.move[0], 
+      coordF: moveDetails.move[1], 
+      pieces: position, 
+      usingSpell: moveDetails.usingSpell, 
+      promote: moveDetails.promote,
+      team: tokenData.team
+    }, newPosition)
     if (newPosition.error) return { error: true, position: positionJson };
     await gameRepository.saveGamePosition({ path: tokenData.path, position: JSON.stringify(newPosition.position) });
     return { position: JSON.stringify(newPosition.position), checkmate: newPosition.checkmate, moveNumber };
@@ -139,6 +146,7 @@ function movePiece (io: Server, socket: Socket) {
       const isFinished = await gameRepository.readGameResult(tokenData.path);
       if (isFinished) return io.in(tokenData.path).emit(Events.GAME_RESULT, isFinished);
       const moveResult = await tryMove({ tokenData, moveDetails });
+      console.log('idx142', moveResult)
       if (moveResult.error) return io.in(socket.id).emit(Events.POSITION, { position: moveResult.position });
       let checkmate: Results.WHITE | Results.BLACK | boolean = false;
       if (moveResult.checkmate === 'WHITE') checkmate = Results.WHITE;

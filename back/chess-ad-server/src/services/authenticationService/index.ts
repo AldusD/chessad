@@ -17,7 +17,6 @@ async function createUser({ username, email, password }: SignUpParams): Promise<
     password: hashedPassword,
   });
 
-  console.log(user);
   if(!user) throw serverError();
   return user;
 }

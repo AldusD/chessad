@@ -105,9 +105,7 @@ async function listGames(username: string): Promise<Game[]> {
   let games;
   try {
     if (username) {
-      console.log('idxSvc108')
       games = await gameRepository.findClosedByUsername(username);
-      console.log('idxSvc110', games)
     } else {
       games = await gameRepository.findAllClosed();
     }
