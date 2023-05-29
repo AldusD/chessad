@@ -12,6 +12,7 @@ import WaitingRoom from './components/pages/WaitingRoom';
 import { GameProvider } from "./contexts/GameContext";
 import { UserProvider } from './contexts/UserContext';
 import { SocketProvider } from './contexts/SocketContext';
+import NotFound from './components/pages/NotFound';
 
 function App() {
   const queryClient = new QueryClient();
@@ -31,7 +32,7 @@ function App() {
             <Route path="/games/join/:gamePath" element={ <WaitingRoom /> } />
             <Route path="/games/play/:gamePath" element={ <Game /> } />
             <Route path="/games/view/:gamePath" element={ <ViewGamePage /> } />
-            <Route path='*' element={ <span>Not Found :/</span> } />
+            <Route path='*' element={ <NotFound /> } />
           </Routes>
         </BrowserRouter>
       </SocketProvider>
