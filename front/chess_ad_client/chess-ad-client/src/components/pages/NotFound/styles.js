@@ -2,8 +2,7 @@ import styled from "styled-components";
 
 export const Container = styled.div`
   display: flex;
-  padding-top: 4vh;
-  height: 96vh;
+  height: 90vh;
 
   img {
     margin: 3vh;

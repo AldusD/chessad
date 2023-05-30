@@ -31,6 +31,7 @@ export default function MainPage () {
             <Login setSelectedForm={setSelectedForm} /> : <SignupPage setSelectedForm={setSelectedForm} />
           }
           <Link to='/howtoplay' >How to play!</Link>
+          <Link to='/contactus' >Contact Us!</Link>
           <Buttons>
             {(pointOfView === 'white') ? 
               <PovButton onClick={() => setPointOfView('black')} textColor={'#333'} backgroundColor={'white'} >POV: White</PovButton>
