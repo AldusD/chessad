@@ -23,6 +23,7 @@ export const Menu = styled.div`
     text-decoration: none;
     color: white;
     font-size: 1rem;
+    margin: 1vh 0;
   }
 `;
 

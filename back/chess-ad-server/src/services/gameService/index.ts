@@ -93,18 +93,34 @@ async function finishGame(resultToken: string): Promise<Game> {
   if (error) throw invalidTokenError();
   const { path, result, pgn } = tokenData;
   const points = (result === Results.TIE) ? '1/2-1/2' : (result === Results.WHITE) ? '1-0' : '0-1';
-
+  const checkGame = await gameRepository.findByPath(path);
+  if (!checkGame || !checkGame.isOpen) throw invalidPathError();
   const game = await gameRepository.updateByPath({ path, result: points, pgn });
   if (!game) throw invalidPathError();  
 
   return game;
 }
 
+async function listGames(username: string): Promise<Game[]> {
+  let games;
+  try {
+    if (username) {
+      games = await gameRepository.findClosedByUsername(username);
+    } else {
+      games = await gameRepository.findAllClosed();
+    }
+    return games;
+  } catch (error) {
+    throw { message: 'Server error, please try again later' } 
+  }
+}
+
 const gameService = {
   createGame,
   listGameByPath,
   sendPlayerToken,
-  finishGame
+  finishGame,
+  listGames
 };
 
 export default gameService;

@@ -73,3 +73,14 @@ export async function patchGame(req: Request, res: Response) {
     return res.status(httpStatus.UNPROCESSABLE_ENTITY).send(error.message);
   }
 }
+
+export async function getGames(req: Request, res: Response) {
+  const username = req.query.u as string;
+
+  try {
+    const result = await gameService.listGames(username);
+    return res.status(httpStatus.OK).send(result);
+  } catch (error) {
+    return res.status(httpStatus.BAD_REQUEST).send(error.message);
+  }
+}

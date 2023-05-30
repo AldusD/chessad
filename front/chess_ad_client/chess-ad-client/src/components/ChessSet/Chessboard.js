@@ -4,7 +4,7 @@ import Square from './Square';
 import { useChessSet } from '../../hooks/useChessSet';
 import { useGame } from '../../contexts/GameContext';
 
-export default function Chessboard({ pointOfView, reset }) {
+export default function Chessboard({ pointOfView, reset, toInsertPosition }) {
   const [startCoordinates, startPieces] = useChessSet();
   const [pieces, setPieces] = useState(startPieces());
   const [squares, setSquares] = useState(startCoordinates());
@@ -24,6 +24,7 @@ export default function Chessboard({ pointOfView, reset }) {
     setPieces(position);
   }, [position])
 
+  useEffect(() => {if(toInsertPosition) setPieces(toInsertPosition)}, [toInsertPosition])
   useEffect(() => {setPieces(startPieces())}, [reset])
 
   return (

@@ -38,6 +38,22 @@ export const GameHallStyles = styled.div`
     height: 60vh;
     border-radius: 1rem;
 
+    ::-webkit-scrollbar {
+    width: 0.4rem;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #00000000;
+    }
+  
+    ::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 1vh;
+    }
+  
+    ::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
 
     p {
       margin-bottom: 1vh;

@@ -31,6 +31,7 @@ export default function MainPage () {
             <Login setSelectedForm={setSelectedForm} /> : <SignupPage setSelectedForm={setSelectedForm} />
           }
           <Link to='/howtoplay' >How to play!</Link>
+          <Link to='/contactus' >Contact Us!</Link>
           <Buttons>
             {(pointOfView === 'white') ? 
               <PovButton onClick={() => setPointOfView('black')} textColor={'#333'} backgroundColor={'white'} >POV: White</PovButton>
@@ -46,12 +47,14 @@ export default function MainPage () {
             <PlayerData 
               profilePicture={Guest} 
               username={'Guest'} 
-              color={pointOfView === "white" ? "black" : "white"} 
+              color={pointOfView === "white" ? "black" : "white"}
+              pointOfView={pointOfView}
               showOptions={false} />
             <PlayerData 
               profilePicture={Guest}
               username={'Guest'} 
-              color={pointOfView} 
+              color={pointOfView}
+              pointOfView={pointOfView} 
               showOptions={true}
               isAnalysisBoard={true} />
           </div>

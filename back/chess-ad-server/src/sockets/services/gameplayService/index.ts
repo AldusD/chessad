@@ -13,7 +13,7 @@ const SECONDS_TO_MILLISECONDS = 1000;
 type MoveDetails = { 
   move: string[], 
   usingSpell: boolean, 
-  promote: boolean 
+  promote: string 
 };
 
 type MoveInfo = {
@@ -23,7 +23,7 @@ type MoveInfo = {
 
 type StatusInfo = {
   tokenData: PlayerTokenData,
-  move: string[],
+  moveDetails: MoveDetails,
   turn: Results.WHITE | Results.BLACK
 }
 
@@ -47,6 +47,13 @@ type TimeoutInfo = {
 
 const checkTimeout = (timeoutInfo: TimeoutInfo): boolean => !!(timeoutInfo.time < (Date.now() - timeoutInfo.lastMoveTime));
 
+const extractPgnAdd = (info: Partial<MoveDetails>): string => {
+  const { promote, usingSpell } = info;
+  if (promote) return `/p-${promote[1].toLowerCase()}`;
+  if (usingSpell) return '/s';
+  return '';
+}
+
 const tryMove = async (moveInfo: MoveInfo): Promise<TryMoveResult> => {
   try {
     const { moveDetails, tokenData } = moveInfo;
@@ -63,7 +70,14 @@ const tryMove = async (moveInfo: MoveInfo): Promise<TryMoveResult> => {
       promote: moveDetails.promote,
       team: tokenData.team
     });
-    
+    console.log('idx73', { 
+      coordI: moveDetails.move[0], 
+      coordF: moveDetails.move[1], 
+      pieces: position, 
+      usingSpell: moveDetails.usingSpell, 
+      promote: moveDetails.promote,
+      team: tokenData.team
+    }, newPosition)
     if (newPosition.error) return { error: true, position: positionJson };
     await gameRepository.saveGamePosition({ path: tokenData.path, position: JSON.stringify(newPosition.position) });
     return { position: JSON.stringify(newPosition.position), checkmate: newPosition.checkmate, moveNumber };
@@ -74,7 +88,8 @@ const tryMove = async (moveInfo: MoveInfo): Promise<TryMoveResult> => {
 
 const tryStatus = async (statusInfo: StatusInfo): Promise<TryStatusResult> => {
   try {
-    const { tokenData, move, turn } = statusInfo;
+    const { tokenData, moveDetails, turn } = statusInfo;
+    const { move, usingSpell, promote } = moveDetails;
     const previousStatusJson = await gameRepository.readGameStatus(tokenData.path);
     if (!previousStatusJson) { 
       const timeControl = tokenData.timeControl;
@@ -92,7 +107,8 @@ const tryStatus = async (statusInfo: StatusInfo): Promise<TryStatusResult> => {
     
     const previousStatus = JSON.parse(previousStatusJson);
     const { timeControl, whitePlayerTime, blackPlayerTime, lastMoveTimestamp, pgn } = previousStatus;
-    const updatedPgn = `${pgn}, ${move[0]}-${move[1]}`;
+    const pgnAdd = extractPgnAdd({ usingSpell, promote }); 
+    const updatedPgn = `${pgn}, ${move[0]}-${move[1]}${pgnAdd}`;
     const moveTimestamp = Date.now();
     const timeSpent = moveTimestamp - lastMoveTimestamp;
     const increment = timeControl[1] * SECONDS_TO_MILLISECONDS;
@@ -130,8 +146,8 @@ function movePiece (io: Server, socket: Socket) {
       const isFinished = await gameRepository.readGameResult(tokenData.path);
       if (isFinished) return io.in(tokenData.path).emit(Events.GAME_RESULT, isFinished);
       const moveResult = await tryMove({ tokenData, moveDetails });
+      console.log('idx142', moveResult)
       if (moveResult.error) return io.in(socket.id).emit(Events.POSITION, { position: moveResult.position });
-      console.log('mp', isFinished)
       let checkmate: Results.WHITE | Results.BLACK | boolean = false;
       if (moveResult.checkmate === 'WHITE') checkmate = Results.WHITE;
       if (moveResult.checkmate === 'BLACK') checkmate = Results.BLACK;
@@ -139,7 +155,7 @@ function movePiece (io: Server, socket: Socket) {
       const turn = (moveResult.moveNumber % 2 === 1) ? Results.WHITE : Results.BLACK;
       const nextTurn = (turn === Results.WHITE) ? Results.BLACK : Results.WHITE;
 
-      const statusResult = await tryStatus({ tokenData, turn, move: moveDetails.move });
+      const statusResult = await tryStatus({ tokenData, turn, moveDetails });
       if (statusResult.error) return;
       
       if (statusResult.result) {

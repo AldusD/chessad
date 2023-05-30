@@ -3,7 +3,8 @@ import { Teams } from "../../../utils/token";
 
 export default function (moveInfo: any) {
   const { pieces } = moveInfo;
-  const moveDetails = validateMove({ ...moveInfo, pieces }) as any;
+  const previousPosition = JSON.parse(JSON.stringify(pieces)); // isolate the previous position from the move attempt errors
+  const moveDetails = validateMove({...moveInfo, pieces: {...previousPosition}}) as any;
 
   if (pieces.move % 2 === 1 && moveInfo.team != Teams.white ) return { error: true };
   if (pieces.move % 2 === 0 && moveInfo.team != Teams.black ) return { error: true };

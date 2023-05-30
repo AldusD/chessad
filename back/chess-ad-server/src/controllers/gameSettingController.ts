@@ -7,7 +7,6 @@ import gameSettingService, { GameSettingParams } from "../services/gameSettingSe
 export async function getGameSettings(req: Request, res: Response) {
   try {
     const result = await gameSettingService.listGameSettings();
-    console.log(result)
     return res.status(httpStatus.OK).send({ games: result });
   } catch (error) {
     return res.sendStatus(httpStatus.BAD_REQUEST);
