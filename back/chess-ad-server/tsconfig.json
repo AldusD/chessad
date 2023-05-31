@@ -7,11 +7,12 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "esModuleInterop": true,
+    "skipLibCheck": true,
     "rootDirs": [
       "src",
       "tests"
     ],
-    "baseUrl": "src",
+    "baseUrl": "src/",
     "paths": {
       "@/*": [
         "*"

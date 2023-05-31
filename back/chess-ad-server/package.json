@@ -8,7 +8,8 @@
     "test": "NODE_ENV=test jest --passWithNoTests --runInBand",
     "test:watch": "jest --watch --passWithNoTests --runInBand",
     "test:coverage": "NODE_ENV=test jest --passWithNoTests --runInBand --coverage --collectCoverageFrom='./src/**'",
-    "dev": "NODE_ENV=development nodemon --watch 'src/' --exec 'ts-node -r tsconfig-paths/register ./src/server.ts' -e ts"
+    "dev": "NODE_ENV=development nodemon --watch 'src/' --exec 'ts-node -r tsconfig-paths/register ./src/server.ts' -e ts",
+    "build": "tsc"
   },
   "keywords": [],
   "author": "",
