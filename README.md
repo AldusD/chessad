@@ -6,8 +6,8 @@ Chess Arcane Dynasty: strategy, tatics and magic.
 
 ## About 
 
-Chess AD is a online chess game that mix role playing games universe with our beloved millennial game.
-This project is the last and more important project of Driven Education's Full Stack Web Development Bootcamp. I found the ChessAD idea to be great for show  my knowledge and learn more about the following technologies:
+Chess AD is a online chess game that mix role-playing games universe with our beloved millennial game.
+This project is the last and more important project of Driven Education's Full Stack Web Development Bootcamp. I found the idea of ​​ChessAD great for showing my knowledge and learning more about the following technologies:
 - Single page applications with React (Create React APP, React-Browser-Router, React-Query)
 - REST APIs with Express (Typescript, jest, supertest)
 - NoSQL Database with MongoDb (Prisma ORM)
@@ -56,8 +56,8 @@ npm start
 ## How to run tests
 
 1. Follow the steps in the last section
-2. Configure the `.env.test` file according to the `.env.example` file
-3. Run test:
+2. Fill a `.env.test` file according to the `.env.example` file
+3. Run test command:
 
 ```node
 // in back/chess-ad-server
