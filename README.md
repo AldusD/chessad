@@ -1,5 +1,7 @@
 # Chess AD
 
+[Leia esta página em português](https://github.com/AldusD/chessad/blob/main/README-pt.md)
+
 Chess Arcane Dynasty: strategy, tatics and magic.
 
 ## About 
