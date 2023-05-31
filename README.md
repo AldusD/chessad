@@ -7,6 +7,12 @@ Chess Arcane Dynasty: strategy, tatics and magic.
 ## About 
 
 Chess AD is a online chess game that mix role playing games universe with our beloved millennial game.
+This project is the last and more important project of Driven Education's Full Stack Web Development Bootcamp. I found the ChessAD idea to be great for show  my knowledge and learn more about the following technologies:
+- Single page applications with React (Create React APP, React-Browser-Router, React-Query)
+- REST APIs with Express (Typescript, jest, supertest)
+- NoSQL Database with MongoDb (Prisma ORM)
+- in-memory data structure with Redis
+- Real time client-server communication with Socket.io
 
 ## How to run for development
 
