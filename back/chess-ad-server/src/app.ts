@@ -4,7 +4,6 @@ import express, { Express } from "express";
 import cors from "cors";
 import http from  "http";
 import { Server, Socket } from "socket.io";
-import { instrument } from '@socket.io/admin-ui'
 
 import connectServices from "./sockets";
 import { loadEnv, connectDb, disconnectDB, prisma, connectRedis } from "./config";
@@ -26,7 +25,7 @@ const httpServer = http.createServer(app);
 const io = new Server(httpServer, 
   { 
     cors: { 
-      origin: [process.env.FRONTEND_URL, 'https://admin.socket.io'], 
+      origin: [process.env.FRONTEND_URL], 
       methods: ['GET', 'POST'],
       credentials: true
     } 
@@ -34,7 +33,6 @@ const io = new Server(httpServer,
 
 const onConnection = (socket: Socket) => connectServices(io, socket);
 io.on("connection", onConnection);
-instrument(io, { auth: false })
 
 export function init(): Promise<Express> {
   connectDb();
