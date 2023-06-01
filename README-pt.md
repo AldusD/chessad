@@ -2,6 +2,8 @@
 
 [Read this page in english](https://github.com/AldusD/chessad/blob/main/README.md)
 
+[App Deploy](https://chessad.vercel.app)
+
 Chess Arcane Dynasty: estratégia, tatica e magia.
 
 ## Sobre
